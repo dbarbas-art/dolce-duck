@@ -9,10 +9,10 @@ const catalogoPasteleria = [
   { id: 5, name: 'Pepas con Dulce', slogan: 'MIRA LO QUE ES ESO.', img: '/images/pepas.jpg', precio: 6500, tipo: 'pepas' },
   { id: 6, name: 'Galletitas', slogan: 'ES UN MUST CON EL MATE.', img: '/images/galletitas.jpg', precio: 5000, tipo: 'galletitas' },
   { id: 7, name: 'Medialunas', slogan: 'INFALTABLE EN LA MESA.', img: '/images/medialunas.jpg', precio: 7000, tipo: 'normal' },
-  { id: 8, name: 'Lemon Pie', slogan: 'El equilibrio justo de acidez.', img: '/images/lemonpie.jpg', precio: 11000, tipo: 'normal' },
-  { id: 9, name: 'Cheesecake', slogan: 'Suave y cremoso con frutos rojos.', img: '/images/cheesecake.jpg', precio: 14500, tipo: 'normal' },
-  { id: 10, name: 'Pan Dulce', slogan: 'Esponjoso y lleno de magia.', img: '/images/pandulce.jpg', precio: 8000, tipo: 'normal' },
-  { id: 11, name: 'Torta de Ricota', slogan: 'Un clásico que nunca falla.', img: '/images/tortaricota.jpg', precio: 9500, tipo: 'normal' },
+  { id: 8, name: 'Lemon Pie', slogan: 'El equilibrio justo de acidez.', img: '/images/lemonpie.jpeg', precio: 11000, tipo: 'normal' },
+  { id: 9, name: 'Cheesecake', slogan: 'Suave y cremoso con frutos rojos.', img: '/images/cheesecake.jpeg', precio: 14500, tipo: 'normal' },
+  { id: 10, name: 'Pan Dulce', slogan: 'Esponjoso y lleno de magia.', img: '/images/pandulce.JPG', precio: 8000, tipo: 'normal' },
+  { id: 11, name: 'Torta de Ricota', slogan: 'Un clásico que nunca falla.', img: '/images/tortaricota.jpeg', precio: 9500, tipo: 'normal' },
   { id: 12, name: 'Torta Personalizada', slogan: 'Diseñala a tu gusto.', img: '/images/tortacumple.jpg', precio: 35000, tipo: 'torta' },
 ];
 
@@ -131,7 +131,7 @@ function App() {
                 <div className="buscador">
                   <input 
                     type="text" 
-                    placeholder="¿Qué dulce buscás hoy?" 
+                    placeholder="¿Qué antojo tenés hoy?" 
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -174,8 +174,8 @@ function App() {
                 <p>Nuestra pastelera, <strong>Sofía Barbás</strong>, tiene un gran sueño: compartir sus creaciones con todas las personas, llevando dulzura, amor y un toque de magia a cada rincón.</p>
               </div>
               <div className="nosotros-foto-sofi">
-                <img src="/images/sofi.jpg" alt="Sofía Barbás" />
-                <div className="sofi-decor">✨ Hecho con amor ✨</div>
+                <img src="/images/sofi.JPG" alt="Sofía Barbás" />
+                <div className="sofi-decor"> Hecho con amor </div>
               </div>
             </div>
             
@@ -196,7 +196,7 @@ function App() {
             <div className="contacto-card">
               <img src="/images/LOGO.png" alt="Logo" className="contacto-logo" />
               <h3 className="titulo-seccion">estemos en contacto.</h3>
-              <p>¿Tenés alguna duda, querés una mesa dulce para tu evento o simplemente querés saludar a nuestro patito? ¡Escribinos, nos encanta hablar con vos!</p>
+              <p>¿Tenés alguna duda, querés una mesa dulce para tu evento o simplemente tenés un antojo? ¡Escribinos, nos encanta hablar con vos!</p>
               
               <div className="contacto-links">
                 <a href="https://instagram.com/dolce.duck" target="_blank" rel="noreferrer" className="btn-social btn-ig">
