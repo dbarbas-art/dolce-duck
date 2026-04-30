@@ -222,7 +222,7 @@ function App() {
                     <h4>{prod.name}.</h4>
                     <p>{prod.slogan}</p>
                     <p className="precio-catalogo">${prod.precio}</p>
-                    <button className="btn-detalle">{prod.tipo !== 'normal' ? 'Configurar' : 'Agregar'}</button>
+                    <button className="btn-detalle">{prod.tipo !== 'normal' ? 'Agregar' : 'Agregar'}</button>
                   </div>
                 </div>
               ))}
