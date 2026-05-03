@@ -1,6 +1,14 @@
-import React from 'react';
+"use client";
+import { useState } from 'react';
+import Link from 'next/link';
+import { catalogoPasteleria } from '../data/productos';
 
-const Inicio = ({ searchTerm, setSearchTerm, productosFiltrados, verDetalle }) => {
+export default function Inicio() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const productosFiltrados = searchTerm 
+    ? catalogoPasteleria.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    : [];
+
   return (
     <section className="page-hero">
       <div className="hero-text-container fade-in-up">
@@ -8,6 +16,7 @@ const Inicio = ({ searchTerm, setSearchTerm, productosFiltrados, verDetalle }) =
         <h2 className="antojo-subtitle">somos dolce duck.</h2>
         
         <div className="buscador-contenedor">
+          {/* Aquí agregamos el contenedor .buscador y el botón para recuperar el diseño */}
           <div className="buscador">
             <input 
               type="text" 
@@ -17,31 +26,29 @@ const Inicio = ({ searchTerm, setSearchTerm, productosFiltrados, verDetalle }) =
             />
             <button>Buscar</button>
           </div>
-          
+
           {searchTerm && (
-            <div className="resultados-busqueda slide-down">
-              {productosFiltrados.length > 0 ? (
-                productosFiltrados.map(prod => (
-                  <div key={prod.id} className="resultado-item" onClick={() => verDetalle(prod)}>
+            <div className="resultados-busqueda">
+              {productosFiltrados.map(prod => (
+                <Link key={prod.id} href={`/detalle/${prod.id}`}>
+                  <div className="resultado-item">
                     <img src={prod.img} alt={prod.name} />
-                    <div className="resultado-info">
+                    <div>
                       <h4>{prod.name}</h4>
-                      <p>{prod.slogan}</p>
+                      <p>${prod.precio}</p>
                     </div>
                   </div>
-                ))
-              ) : (
-                <p className="sin-resultados">No encontramos ese producto :(</p>
-              )}
+                </Link>
+              ))}
             </div>
           )}
         </div>
+
       </div>
+      
       <div className="hero-image-bg">
-        <img src="/images/tortainicio.jpg" alt="Fondo Torta" />
+        <img src="/images/tortainicio.jpg" alt="Fondo" />
       </div>
     </section>
   );
-};
-
-export default Inicio;
+}

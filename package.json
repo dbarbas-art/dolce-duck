@@ -3,20 +3,17 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "predeploy": "npm run build",
+"scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start"
+},
+"dependencies": {
+  "next": "latest",
+  "react": "latest",
+  "react-dom": "latest"
+},
 
-    "deploy": "gh-pages -d dist"
-  },
-  "homepage": "https://dbarbas-art.github.io/dolce-duck/",
-  "dependencies": {
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5"
-  },
   "devDependencies": {
     "@babel/core": "^7.29.0",
     "@eslint/js": "^10.0.1",

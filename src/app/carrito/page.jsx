@@ -1,6 +1,18 @@
+"use client";
 import React from 'react';
+import { useCart } from '../../context/CartContext';
 
-const Carrito = ({ cart, eliminarDelCarrito, renderOpcionesTexto, totalCarrito }) => {
+export default function Carrito() {
+  const { cart, eliminarDelCarrito, totalCarrito } = useCart();
+
+  const renderOpcionesTexto = (opc) => {
+    if (!opc) return null;
+    return Object.entries(opc)
+      .filter(([key, val]) => val !== '')
+      .map(([key, val]) => `${key.charAt(0).toUpperCase() + key.slice(1)}: ${val}`)
+      .join(' | ');
+  };
+
   return (
     <section className="page-vacia fade-in-up">
       <h3 className="titulo-seccion">tu pedido.</h3>
@@ -32,6 +44,4 @@ const Carrito = ({ cart, eliminarDelCarrito, renderOpcionesTexto, totalCarrito }
       )}
     </section>
   );
-};
-
-export default Carrito;
+}
