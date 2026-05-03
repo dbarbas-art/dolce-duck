@@ -1,6 +1,14 @@
-import React from 'react';
+"use client";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useCart } from '../context/CartContext';
 
-const Header = ({ navegar, currentPage, cartLength }) => {
+export default function Header() {
+  const pathname = usePathname();
+  const { cart } = useCart();
+
+  const isActive = (path) => pathname === path ? 'active' : '';
+
   return (
     <>
       <div className="marquee">
@@ -13,32 +21,27 @@ const Header = ({ navegar, currentPage, cartLength }) => {
       </div>
 
       <header className="header-principal">
-        <img 
-          src="/images/LOGO.png" 
-          className="logo-fuera" 
-          alt="Logo Dolce Duck" 
-          onClick={() => navegar('inicio')}
-        />
+        <Link href="/">
+          <img src="/images/LOGO.png" className="logo-fuera" alt="Logo" />
+        </Link>
         
         <nav className="navbar-flotante">
-          <div className="nav-brand" onClick={() => navegar('inicio')}>
-            <span>dolce duck</span>
+          <div className="nav-brand">
+            <Link href="/"><span>dolce duck</span></Link>
           </div>
 
           <div className="nav-menu">
             <ul className="nav-links">
-              <li><button onClick={() => navegar('menu')} className={currentPage === 'menu' ? 'active' : ''}>Menú</button></li>
-              <li><button onClick={() => navegar('nosotros')} className={currentPage === 'nosotros' ? 'active' : ''}>Nosotros</button></li>
-              <li><button onClick={() => navegar('contacto')} className={currentPage === 'contacto' ? 'active' : ''}>Contacto</button></li>
+              <li><Link href="/menu"><button className={isActive('/menu')}>Menú</button></Link></li>
+              <li><Link href="/nosotros"><button className={isActive('/nosotros')}>Nosotros</button></Link></li>
+              <li><Link href="/contacto"><button className={isActive('/contacto')}>Contacto</button></Link></li>
             </ul>
-            <button className="btn-carrito" onClick={() => navegar('carrito')}>
-              Carrito ({cartLength})
-            </button>
+            <Link href="/carrito">
+              <button className="btn-carrito">Carrito ({cart.length})</button>
+            </Link>
           </div>
         </nav>
       </header>
     </>
   );
-};
-
-export default Header;
+}

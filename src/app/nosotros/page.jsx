@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Nosotros = () => {
+export default function Nosotros() {
   return (
     <section className="page-nosotros fade-in-up">
       <div className="nosotros-top">
@@ -25,6 +25,4 @@ const Nosotros = () => {
       </div>
     </section>
   );
-};
-
-export default Nosotros;
+}
