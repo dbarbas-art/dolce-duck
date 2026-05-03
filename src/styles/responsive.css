@@ -1,0 +1,581 @@
+/* =========================================
+   RESPONSIVE MOBILE - DOLCE DUCK
+========================================= */
+
+@media (max-width: 800px) {
+  html,
+  body {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    background: var(--amarillo-fondo) !important;
+  }
+
+  body {
+    font-size: 0.88rem !important;
+  }
+
+  main {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
+  /* MARQUEE */
+
+  .marquee {
+    height: 24px;
+    padding: 4px 0 !important;
+    font-size: 0.72rem !important;
+    display: flex;
+    align-items: center;
+  }
+
+  .marquee-inner span {
+    padding-right: 34px;
+  }
+
+  /* HEADER MOBILE */
+
+  .header-principal {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 8px 10px 10px !important;
+    background: var(--amarillo-fondo);
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .logo-fuera {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    margin: 0 !important;
+    border-radius: 10px !important;
+    object-fit: contain !important;
+    position: static !important;
+    transform: none !important;
+  }
+
+  .navbar-flotante {
+    flex: 1;
+    width: auto !important;
+    min-width: 0;
+    padding: 7px 8px !important;
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, 0.82) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(160, 205, 203, 0.25) !important;
+    display: flex !important;
+    justify-content: center !important;
+  }
+
+  .nav-brand {
+    display: none !important;
+  }
+
+  .nav-menu {
+    width: 100%;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    min-width: 0;
+  }
+
+  .nav-links {
+    display: flex !important;
+    align-items: center !important;
+    gap: 2px !important;
+    min-width: 0;
+  }
+
+  .nav-links li {
+    display: flex;
+  }
+
+  .nav-links button {
+    font-size: 0.68rem !important;
+    padding: 5px 6px !important;
+    border-radius: 999px !important;
+    background: transparent !important;
+    color: #3f3f3f !important;
+    text-decoration: underline;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .nav-links button.active {
+    background: rgba(160, 205, 203, 0.8) !important;
+    color: white !important;
+    text-decoration: none;
+  }
+
+  .btn-carrito {
+    font-size: 0.68rem !important;
+    padding: 6px 9px !important;
+    border-radius: 999px !important;
+    background: #777 !important;
+    color: white !important;
+    white-space: nowrap;
+    box-shadow: none !important;
+  }
+
+  /* LANDING / HOME */
+
+  .page-hero {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: auto !important;
+    padding: 22px 18px 0 !important;
+    align-items: stretch !important;
+    overflow: hidden !important;
+  }
+
+  .hero-text-container {
+    width: 100% !important;
+    padding: 0 !important;
+    z-index: 2;
+  }
+
+  .hola-title {
+    font-size: clamp(2.9rem, 14vw, 4.2rem) !important;
+    line-height: 0.86 !important;
+    margin: 0 0 4px !important;
+    color: var(--pale-cyan) !important;
+    letter-spacing: -1px;
+  }
+
+  .antojo-subtitle {
+    display: block !important;
+    font-size: clamp(1.8rem, 8vw, 2.55rem) !important;
+    line-height: 0.98 !important;
+    margin: 0 0 18px !important;
+    color: var(--mauve-pink) !important;
+    max-width: 310px;
+  }
+
+  .buscador-contenedor {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 0 18px !important;
+    position: relative !important;
+    z-index: 5;
+  }
+
+  .buscador {
+    width: 100% !important;
+    min-height: 58px;
+    padding: 7px !important;
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    border: none !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06) !important;
+  }
+
+  .buscador input {
+    width: 100% !important;
+    min-width: 0;
+    font-size: 0.9rem !important;
+    padding: 8px 14px !important;
+    color: #666 !important;
+  }
+
+  .buscador button {
+    display: none !important;
+  }
+
+  .resultados-busqueda {
+    top: calc(100% + 8px) !important;
+    border-radius: 18px !important;
+    max-height: 260px !important;
+    z-index: 20 !important;
+  }
+
+  .resultado-item {
+    gap: 10px !important;
+    padding: 9px !important;
+  }
+
+  .resultado-item img {
+    width: 46px !important;
+    height: 46px !important;
+  }
+
+  .hero-image-bg {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    width: calc(100% + 36px) !important;
+    height: 330px !important;
+    margin: 0 -18px !important;
+    z-index: 1 !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .hero-image-bg img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center 45% !important;
+    border-radius: 0 !important;
+    display: block;
+  }
+
+  /* TITULOS GENERALES */
+
+  .titulo-seccion,
+  .titulo-seccion-left {
+    font-size: 2.35rem !important;
+    line-height: 1.05 !important;
+    margin-bottom: 24px !important;
+    color: var(--pale-cyan) !important;
+  }
+
+  .titulo-seccion {
+    text-align: center !important;
+  }
+
+  .titulo-seccion-left {
+    text-align: left !important;
+  }
+
+  /* MENU / PRODUCTOS */
+
+  .page-menu,
+  .page-vacia {
+    padding: 28px 18px 40px !important;
+  }
+
+  .grilla-productos {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 22px 14px !important;
+  }
+
+  .tarjeta-producto img {
+    height: 155px !important;
+    border-radius: 14px !important;
+  }
+
+  .tarjeta-info {
+    padding: 8px 2px 0 !important;
+  }
+
+  .tarjeta-info h4 {
+    font-size: 0.95rem !important;
+    line-height: 1.15 !important;
+  }
+
+  .tarjeta-info p {
+    font-size: 0.75rem !important;
+    line-height: 1.35 !important;
+    margin: 4px 0 !important;
+  }
+
+  .precio-catalogo {
+    font-size: 0.86rem !important;
+    margin-bottom: 8px !important;
+  }
+
+  .btn-detalle {
+    font-size: 0.72rem !important;
+    padding: 6px 12px !important;
+    border-radius: 999px !important;
+  }
+
+  /* NOSOTROS */
+
+  .page-nosotros {
+    padding: 0 !important;
+  }
+
+  .nosotros-top {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 18px !important;
+    padding: 28px 28px 34px !important;
+  }
+
+  .nosotros-texto {
+    width: 100% !important;
+  }
+
+  .nosotros-texto p {
+    font-size: 1rem !important;
+    line-height: 1.55 !important;
+    margin-bottom: 16px !important;
+    color: #555 !important;
+  }
+
+  .nosotros-foto-sofi {
+    width: 100% !important;
+    flex: none !important;
+    margin-top: 8px !important;
+    position: relative !important;
+  }
+
+  .nosotros-foto-sofi img {
+    width: 100% !important;
+    height: 360px !important;
+    object-fit: cover !important;
+    object-position: center top !important;
+    border-radius: 24px !important;
+    transform: rotate(0deg) !important;
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.12) !important;
+  }
+
+  .sofi-decor {
+    right: 14px !important;
+    bottom: 14px !important;
+    padding: 10px 15px !important;
+    max-width: 120px;
+    text-align: center;
+    font-size: 0.95rem !important;
+    line-height: 1.1 !important;
+    border-radius: 18px !important;
+    transform: rotate(-8deg) !important;
+  }
+
+  .nosotros-galeria {
+    width: 100vw !important;
+    margin-left: calc(50% - 50vw) !important;
+    margin-right: calc(50% - 50vw) !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .nosotros-galeria img {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 4 / 3 !important;
+    object-fit: cover !important;
+    border-radius: 0 !important;
+    display: block !important;
+  }
+
+  /* CONTACTO */
+
+  .page-contacto {
+    min-height: auto !important;
+    padding: 52px 18px 40px !important;
+    align-items: flex-start !important;
+  }
+
+  .contacto-card {
+    width: 100% !important;
+    max-width: 430px !important;
+    padding: 52px 22px 26px !important;
+    border-radius: 28px !important;
+    margin: 0 auto !important;
+  }
+
+  .contacto-logo {
+    width: 58px !important;
+    top: -30px !important;
+  }
+
+  .contacto-card .titulo-seccion {
+    font-size: 2rem !important;
+    margin-bottom: 16px !important;
+  }
+
+  .contacto-card p {
+    font-size: 0.95rem !important;
+    line-height: 1.55 !important;
+    margin-bottom: 20px !important;
+  }
+
+  .contacto-links {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .btn-social {
+    width: 100% !important;
+    padding: 11px 14px !important;
+    border-radius: 18px !important;
+    font-size: 0.92rem !important;
+    font-weight: 700 !important;
+    box-shadow: none !important;
+  }
+
+  .btn-social:hover {
+    transform: none !important;
+  }
+
+  /* DETALLE PRODUCTO */
+
+  .page-detalle {
+    padding: 24px 18px 40px !important;
+  }
+
+  .btn-volver {
+    padding: 7px 14px !important;
+    font-size: 0.78rem !important;
+    margin-bottom: 16px !important;
+  }
+
+  .detalle-layout {
+    flex-direction: column !important;
+    gap: 18px !important;
+    padding: 18px !important;
+    border-radius: 24px !important;
+  }
+
+  .img-principal {
+    max-height: 330px !important;
+    object-fit: cover !important;
+    border-radius: 18px !important;
+  }
+
+  .detalle-info {
+    padding: 0 !important;
+  }
+
+  .detalle-info h2 {
+    font-size: 1.9rem !important;
+    line-height: 1.05 !important;
+  }
+
+  .slogan-detalle {
+    font-size: 0.95rem !important;
+    line-height: 1.45 !important;
+    margin: 10px 0 !important;
+  }
+
+  .precio-detalle {
+    font-size: 1.45rem !important;
+    margin-bottom: 12px !important;
+  }
+
+  .form-personalizado {
+    gap: 10px !important;
+    padding: 14px !important;
+    border-radius: 18px !important;
+    margin-top: 14px !important;
+  }
+
+  .form-personalizado label {
+    font-size: 0.82rem !important;
+  }
+
+  .form-personalizado select,
+  .input-file,
+  .input-text {
+    width: 100% !important;
+    padding: 10px !important;
+    font-size: 0.86rem !important;
+  }
+
+  .btn-comprar-grande {
+    padding: 13px !important;
+    font-size: 0.95rem !important;
+    border-radius: 20px !important;
+    margin-top: 18px !important;
+  }
+
+  /* CARRITO */
+
+  .lista-carrito {
+    width: 100% !important;
+    padding: 18px !important;
+    border-radius: 24px !important;
+  }
+
+  .item-carrito {
+    align-items: flex-start !important;
+    gap: 12px !important;
+    padding: 14px 0 !important;
+  }
+
+  .item-carrito img {
+    width: 62px !important;
+    height: 62px !important;
+    border-radius: 14px !important;
+  }
+
+  .item-info h4 {
+    font-size: 0.95rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .opciones-txt {
+    font-size: 0.72rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .item-precio {
+    min-width: 72px;
+  }
+
+  .item-precio p {
+    font-size: 0.9rem !important;
+  }
+
+  .item-precio button {
+    font-size: 0.72rem !important;
+  }
+
+  .carrito-total h3 {
+    font-size: 1.25rem !important;
+  }
+
+  .btn-finalizar {
+    padding: 13px !important;
+    font-size: 0.95rem !important;
+    border-radius: 18px !important;
+  }
+
+  /* POPUP */
+
+  .logo-enamorado-container img {
+    width: 92px !important;
+    height: 92px !important;
+  }
+
+  .texto-agregado {
+    font-size: 1.35rem !important;
+    text-align: center !important;
+  }
+
+  .heart {
+    font-size: 1.45rem !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .nav-links button {
+    font-size: 0.62rem !important;
+    padding: 5px 4px !important;
+  }
+
+  .btn-carrito {
+    font-size: 0.62rem !important;
+    padding: 6px 7px !important;
+  }
+
+  .hola-title {
+    font-size: 2.75rem !important;
+  }
+
+  .antojo-subtitle {
+    font-size: 1.65rem !important;
+  }
+
+  .grilla-productos {
+    gap: 20px 10px !important;
+  }
+
+  .tarjeta-producto img {
+    height: 140px !important;
+  }
+}

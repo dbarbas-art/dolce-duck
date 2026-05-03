@@ -1,0 +1,137 @@
+/* DETALLE DE PRODUCTO */
+.page-detalle {
+  padding: 30px 10%;
+}
+
+.btn-volver {
+  background: var(--pale-cyan);
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 18px;
+  margin-bottom: 25px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.detalle-layout {
+  display: flex;
+  gap: 40px;
+  background: white;
+  padding: 30px;
+  border-radius: 30px;
+  box-shadow: var(--sombra);
+}
+
+.detalle-imagenes {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.img-principal {
+  width: 100%;
+  border-radius: 15px;
+}
+
+.img-minis {
+  display: flex;
+  gap: 12px;
+}
+
+.img-minis p {
+  width: 100%;
+  font-weight: 600;
+  color: var(--mauve-pink);
+  font-size: 0.9rem;
+}
+
+.img-minis img {
+  width: 25%;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.img-minis img:hover {
+  transform: scale(1.08);
+  border-color: var(--pale-cyan);
+}
+
+.detalle-info {
+  flex: 1;
+  padding: 15px 0;
+}
+
+.detalle-info h2 {
+  font-size: 2.3rem;
+  color: var(--violeta-acento);
+}
+
+.slogan-detalle {
+  font-size: 1.1rem;
+  color: var(--mauve-pink);
+  font-weight: 600;
+  margin: 12px 0;
+}
+
+.precio-detalle {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--texto);
+  margin-bottom: 15px;
+}
+
+.btn-comprar-grande {
+  width: 100%;
+  background: var(--violeta-acento);
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 25px;
+  transition: 0.2s;
+}
+
+.btn-comprar-grande:hover {
+  transform: scale(1.01);
+  background-color: #8A649F;
+}
+
+/* FORMULARIOS DINÁMICOS */
+.form-personalizado {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background: #fdfdfd;
+  padding: 20px;
+  border-radius: 20px;
+  margin-top: 20px;
+  border: 1px solid #eee;
+}
+
+.form-personalizado label {
+  font-weight: 600;
+  color: var(--pale-cyan);
+  font-size: 0.9rem;
+}
+
+.form-personalizado select,
+.input-file,
+.input-text {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-family: inherit;
+  outline: none;
+}
+
+.nota-pastelera {
+  font-size: 0.75rem;
+  font-style: italic;
+  color: #888;
+}

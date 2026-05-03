@@ -1,0 +1,74 @@
+/* SECCIÓN NOSOTROS */
+.page-nosotros {
+  padding-bottom: 0;
+}
+
+.nosotros-top {
+  display: flex;
+  align-items: center;
+  gap: 50px;
+  padding: 40px 10% 60px 10%;
+  background-color: var(--amarillo-fondo);
+}
+
+.nosotros-texto {
+  flex: 1;
+  text-align: left;
+}
+
+.nosotros-texto p {
+  font-size: 1.2rem;
+  color: var(--texto);
+  line-height: 1.8;
+  margin-bottom: 20px;
+}
+
+.nosotros-foto-sofi {
+  flex: 0.8;
+  position: relative;
+}
+
+.nosotros-foto-sofi img {
+  width: 100%;
+  border-radius: 20px;
+  box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.15);
+  transform: rotate(3deg);
+  transition: 0.3s;
+}
+
+.nosotros-foto-sofi img:hover {
+  transform: rotate(0deg);
+}
+
+.sofi-decor {
+  position: absolute;
+  bottom: -15px;
+  right: -20px;
+  background: var(--pale-cyan);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: 800;
+  transform: rotate(-10deg);
+  box-shadow: var(--sombra);
+}
+
+/* GALERÍA DE NOSOTROS */
+.nosotros-galeria {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+}
+
+.nosotros-galeria img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+}
+
+.nosotros-galeria img.nosotros-galeria-special {
+  object-fit: contain;
+  aspect-ratio: initial;
+  background-color: white;
+}

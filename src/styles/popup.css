@@ -1,0 +1,116 @@
+/* POPUP TRANSPARENTE CON PATITO Y CORAZONES */
+.cart-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cart-popup-box {
+  background: transparent;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.texto-agregado {
+  color: white;
+  font-size: 2rem;
+  margin: 0;
+  text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.4);
+  font-weight: 800;
+}
+
+.pop-in {
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ANIMACIÓN PATITO ENAMORADO */
+.logo-enamorado-container {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.logo-enamorado-container img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+}
+
+.patito-enamorado {
+  animation: latido-pato 0.8s infinite alternate;
+}
+
+@keyframes latido-pato {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+
+  100% {
+    transform: scale(1.1) rotate(-5deg);
+  }
+}
+
+.heart {
+  position: absolute;
+  font-size: 2rem;
+  opacity: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.heart-1 {
+  top: -10px;
+  left: -20px;
+  animation: float-heart 1.5s ease-out forwards;
+  animation-delay: 0.1s;
+}
+
+.heart-2 {
+  top: -30px;
+  right: 10px;
+  animation: float-heart 1.5s ease-out forwards;
+  animation-delay: 0.4s;
+  font-size: 1.6rem;
+}
+
+.heart-3 {
+  top: 20px;
+  right: -30px;
+  animation: float-heart 1.5s ease-out forwards;
+  animation-delay: 0.7s;
+}
+
+@keyframes float-heart {
+  0% {
+    transform: translateY(0) scale(0.5);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-60px) scale(1.2);
+    opacity: 0;
+  }
+}

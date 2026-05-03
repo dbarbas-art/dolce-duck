@@ -1,0 +1,68 @@
+/* CATÁLOGO / MENÚ */
+.grilla-productos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 30px;
+}
+
+/* PRODUCTOS MINIMALISTAS */
+.tarjeta-producto {
+  background: transparent;
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: none;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.tarjeta-producto:hover {
+  transform: translateY(-5px);
+}
+
+.tarjeta-producto img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  border-radius: 12px;
+  border-bottom: none;
+  box-shadow: var(--sombra);
+}
+
+.tarjeta-info {
+  padding: 12px 5px 0 5px;
+  text-align: left;
+}
+
+.tarjeta-info h4 {
+  color: var(--violeta-acento);
+  font-size: 1.1rem;
+}
+
+.tarjeta-info p {
+  color: var(--mauve-pink);
+  margin: 4px 0;
+  font-size: 0.85rem;
+}
+
+.precio-catalogo {
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  margin-bottom: 12px !important;
+}
+
+.btn-detalle {
+  background: transparent;
+  color: var(--violeta-acento);
+  border: 1px solid var(--violeta-acento);
+  padding: 6px 16px;
+  border-radius: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: 0.2s;
+}
+
+.btn-detalle:hover {
+  background: var(--violeta-acento);
+  color: white;
+}

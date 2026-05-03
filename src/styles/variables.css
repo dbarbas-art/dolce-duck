@@ -1,0 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
+
+:root {
+  --amarillo-fondo: #FAF3C0;
+  --pale-cyan: #A0CDCB;
+  --mauve-pink: #AC8BA4;
+  --violeta-acento: #9D74B2;
+  --blanco: #FFFFFF;
+  --texto: #4A4A4A;
+  --sombra: 0px 4px 12px rgba(0, 0, 0, 0.03);
+}
