@@ -754,60 +754,66 @@ body {
 }
 
 /* RESPONSIVE */
+/* =========================================
+   FIX ANTI-SCROLL HORIZONTAL
+========================================= */
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden; /* Esto mata la barra de espacio a la derecha */
+}
+
+/* =========================================
+   RESPONSIVE - CELULARES Y TABLETS
+========================================= */
 @media (max-width: 800px) {
-  /* --- AJUSTES GENERALES DE PADDING --- */
-  /* Reducimos los márgenes laterales para aprovechar el ancho del celu */
-  .page-hero, .page-menu, .page-vacia, .page-detalle, .page-contacto, .nosotros-top {
-    padding-left: 5%;
-    padding-right: 5%;
+  /* Contenedor principal: apilamos todo al centro */
+  .page-hero { 
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    text-align: center; 
+    padding: 20px; 
+    min-height: auto; 
   }
 
-  /* --- TIPOGRAFÍAS MÁS CHICAS --- */
-  .hola-title { font-size: 3.5rem; }
-  .antojo-subtitle { font-size: 1.5rem; }
-  .titulo-seccion, .titulo-seccion-left { font-size: 2rem; margin-bottom: 20px; }
-
-  /* --- HEADER Y NAVEGACIÓN COMPACTA --- */
-  .header-principal { padding: 10px 5%; gap: 5px; }
-  
-  /* Achicamos un poco el patito flotante */
-  .logo-fuera { width: 45px; height: 45px; margin-bottom: -15px; z-index: 101; }
-
-  .navbar-flotante {
-    flex-direction: row; /* Volvemos a poner los elementos en fila */
-    flex-wrap: wrap;     /* Permite que si algo no entra, baje suavemente */
-    justify-content: center;
-    padding: 10px;
-    border-radius: 20px;
-    gap: 5px;
+  /* Textos y buscador */
+  .hero-text-container { 
+    width: 100%; 
+    padding: 0; 
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
-  /* Ocultamos el texto "dolce duck" de la barra blanca en celular 
-     para ganar espacio (total, ya tenemos el patito arriba) */
-  .nav-brand { display: none; }
+  .hola-title { 
+    font-size: 3.5rem; /* Un poco más chico para que no desborde */
+    line-height: 1.1;
+  }
 
-  .nav-menu { gap: 5px; }
-  .nav-links { gap: 2px; }
-  .nav-links button { padding: 6px 10px; font-size: 0.8rem; }
-  .btn-carrito { padding: 6px 12px; font-size: 0.8rem; }
+  .antojo-subtitle { 
+    font-size: 1.8rem; 
+    margin-bottom: 20px;
+  }
 
-  /* --- SECCIÓN HERO (Inicio) --- */
-  .hero-text-container { width: 100%; padding-right: 0; margin-top: 20px;}
-  .hero-image-bg { position: relative; width: 100%; height: 250px; margin-top: 30px; z-index: 1;}
-  
-  /* Buscador más proporcionado */
-  .buscador input { font-size: 0.8rem; padding: 8px 10px; }
-  .buscador button { padding: 8px 15px; font-size: 0.8rem; }
+  /* Buscador para que no rompa el ancho */
+  .buscador-contenedor {
+    width: 100%;
+    max-width: 350px; /* Evita que el input sea más ancho que el celu */
+  }
 
-  /* --- OTRAS SECCIONES --- */
-  .detalle-layout { flex-direction: column; padding: 20px; gap: 20px;}
-  
-  .nosotros-top { flex-direction: column; text-align: center; gap: 20px; padding-top: 20px;}
-  .nosotros-texto { text-align: center;}
-  .nosotros-texto p { font-size: 1rem; }
-  .nosotros-galeria { grid-template-columns: 1fr; } 
-  
-  .contacto-card { padding: 30px 20px; }
-  .contacto-links { flex-direction: column; gap: 10px; }
-  .btn-social { width: 100%; text-align: center; padding: 12px 20px; font-size: 1rem;}
+  .buscador-contenedor input {
+    width: 100%;
+  }
+
+  /* FIX: Imagen de inicio cortada */
+  .hero-image-bg {
+    width: 100%;
+    height: 350px; /* Le damos una altura fija para el celu */
+    margin-top: 30px;
+    background-size: cover; /* Asegura que la imagen llene el espacio sin deformarse */
+    background-position: center; /* Centra la imagen para que se vea lo importante */
+    background-repeat: no-repeat;
+    border-radius: 15px; /* Bordes redondeados para que quede prolijo */
+  }
 }
