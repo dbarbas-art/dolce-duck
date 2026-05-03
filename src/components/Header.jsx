@@ -14,7 +14,7 @@ export default function Header() {
       <div className="marquee">
         <div className="marquee-inner">
           <span>Dolce Duck - Pastelería artesanal</span>
-          <span>Pedí tu antojo hoy</span>
+          <span>Envíos gratis en CABA</span>
           <span>Dolce Duck - Pastelería artesanal</span>
           <span>Pedí tu antojo hoy</span>
         </div>
