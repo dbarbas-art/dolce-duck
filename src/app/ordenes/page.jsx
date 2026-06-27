@@ -43,7 +43,7 @@ export default function Ordenes() {
   if (cargando) {
     return (
       <section className="page-vacia fade-in-up">
-        <h3 className="titulo-seccion">mis pedidos.</h3>
+        <h3 className="titulo-seccion">Mis pedidos</h3>
         <p style={{ textAlign: 'center', color: 'var(--texto)' }}>Cargando historial...</p>
       </section>
     );
@@ -52,7 +52,7 @@ export default function Ordenes() {
   if (error) {
     return (
       <section className="page-vacia fade-in-up">
-        <h3 className="titulo-seccion">mis pedidos.</h3>
+        <h3 className="titulo-seccion">Mis pedidos</h3>
         <div className="checkout-wrapper" style={{ maxWidth: 480, textAlign: 'center' }}>
           <p className="checkout-error">{error}</p>
           <Link href="/login?redirect=/ordenes">
@@ -68,7 +68,7 @@ export default function Ordenes() {
   if (ordenes.length === 0) {
     return (
       <section className="page-vacia fade-in-up">
-        <h3 className="titulo-seccion">mis pedidos.</h3>
+        <h3 className="titulo-seccion">Mis pedidos</h3>
         <div className="checkout-wrapper" style={{ maxWidth: 480, textAlign: 'center' }}>
           <p className="checkout-subtitle">Todavía no hiciste ningún pedido.</p>
           <Link href="/menu">
@@ -83,7 +83,7 @@ export default function Ordenes() {
 
   return (
     <section className="page-vacia fade-in-up">
-      <h3 className="titulo-seccion">mis pedidos.</h3>
+      <h3 className="titulo-seccion">Mis pedidos</h3>
 
       <div style={{ maxWidth: 780, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
         {ordenes.map((orden) => (

@@ -55,6 +55,19 @@ export async function POST(request) {
   // Total calculado en el servidor
   const total = itemsCarrito.reduce((acc, item) => acc + item.precio, 0);
 
+  // Extraer sabores y agregados de opciones para columnas indexadas
+  const sabores = [...new Set(
+    itemsCarrito.map(item => item.opciones?.sabor).filter(Boolean)
+  )];
+
+  const agregados = [...new Set(
+    itemsCarrito.flatMap(item => {
+      const agg = item.opciones?.agregados;
+      if (!agg) return [];
+      return Array.isArray(agg) ? agg : [agg];
+    })
+  )];
+
   // Insertar pedido con user_id
   const { data: pedido, error: errorPedido } = await supabase
     .from('pedidos')
@@ -67,6 +80,9 @@ export async function POST(request) {
       total,
       estado_pago: 'pendiente',
       notas: notas || null,
+      comentarios: notas || null,
+      sabores: sabores.length ? sabores : null,
+      agregados: agregados.length ? agregados : null,
       metodo_pago: metodo_pago || null,
       metodo_entrega: metodo_entrega || null,
       fecha_estimada: fecha || null,

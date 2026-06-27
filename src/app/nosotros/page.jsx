@@ -5,7 +5,7 @@ export default function Nosotros() {
     <section className="page-nosotros fade-in-up">
       <div className="nosotros-top">
         <div className="nosotros-texto">
-          <h3 className="titulo-seccion-left">¿quiénes somos?</h3>
+          <h3 className="titulo-seccion-left">¿Quiénes somos?</h3>
           <p>En Dolce Duck buscamos unir a la gente con nuestra comida. Sabemos que los mejores momentos se comparten alrededor de una mesa dulce.</p>
           <p>Nuestra pastelera, <strong>Sofía Barbás</strong>, tiene un gran sueño: compartir sus creaciones con todas las personas, llevando dulzura, amor y un toque de magia a cada rincón.</p>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "../../context/CartContext";
 
@@ -15,128 +15,54 @@ export default function Checkout() {
     zona: "",
     fecha: "",
     horario: "",
-    metodoPago: "transferencia",
     notas: "",
   });
 
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
 
-  const numeroWhatsApp = "5491133901250";
+  // Computed client-side only to avoid server/client hydration mismatch
+  const [minFecha, setMinFecha] = useState("");
+  useEffect(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 3);
+    setMinFecha(d.toISOString().split("T")[0]);
+  }, []);
 
   const renderOpcionesTexto = (opc) => {
     if (!opc) return "";
-
     return Object.entries(opc)
-      .filter(([key, val]) => val !== "" && val !== null)
-      .map(([key, val]) => {
-        const nombreCampo = key.charAt(0).toUpperCase() + key.slice(1);
-        return `${nombreCampo}: ${val}`;
+      .filter(([, val]) => val !== "" && val !== null)
+      .map(([campo, val]) => {
+        const nombre = campo.charAt(0).toUpperCase() + campo.slice(1);
+        return `${nombre}: ${val}`;
       })
       .join(" | ");
   };
 
-  const formatearPrecio = (precio) => {
-    return new Intl.NumberFormat("es-AR").format(precio);
-  };
+  const formatearPrecio = (precio) =>
+    new Intl.NumberFormat("es-AR").format(precio);
 
   const actualizarDato = (campo, valor) => {
-    setDatosPedido((prev) => ({
-      ...prev,
-      [campo]: valor,
-    }));
-
+    setDatosPedido((prev) => ({ ...prev, [campo]: valor }));
     if (error) setError("");
   };
 
   const validarPedido = () => {
-    if (cart.length === 0) {
-      return "El carrito está vacío. Agregá algo rico antes de confirmar el pedido.";
-    }
-
-    if (!datosPedido.nombre.trim()) {
-      return "Falta completar tu nombre.";
-    }
-
-    if (!datosPedido.telefono.trim()) {
-      return "Falta completar tu teléfono.";
-    }
-
-    if (!datosPedido.fecha) {
-      return "Falta elegir una fecha estimada para el pedido.";
-    }
-
-    if (!datosPedido.horario.trim()) {
-      return "Falta completar un horario estimado.";
-    }
-
+    if (cart.length === 0)
+      return "El carrito está vacío. Agregá algo rico antes de confirmar.";
+    if (!datosPedido.nombre.trim()) return "Falta completar tu nombre.";
+    if (!datosPedido.telefono.trim()) return "Falta completar tu teléfono.";
+    if (!datosPedido.fecha) return "Falta elegir una fecha estimada.";
+    if (!datosPedido.horario.trim()) return "Falta completar un horario estimado.";
     if (datosPedido.metodoEntrega === "envio") {
-      if (!datosPedido.direccion.trim()) {
-        return "Falta completar la dirección de envío.";
-      }
-
-      if (!datosPedido.zona.trim()) {
-        return "Falta completar la zona o barrio.";
-      }
+      if (!datosPedido.direccion.trim()) return "Falta completar la dirección de envío.";
+      if (!datosPedido.zona.trim()) return "Falta completar la zona o barrio.";
     }
-
     return "";
   };
 
-  const armarMensajeWhatsApp = (pedidoId) => {
-    const productos = cart
-      .map((item, index) => {
-        const opciones = renderOpcionesTexto(item.opciones);
-
-        return [
-          `${index + 1}. ${item.name}`,
-          opciones ? `   ${opciones}` : null,
-          `   Precio: $${formatearPrecio(item.precio)}`,
-        ]
-          .filter(Boolean)
-          .join("\n");
-      })
-      .join("\n\n");
-
-    const entrega =
-      datosPedido.metodoEntrega === "envio"
-        ? `Envío a domicilio\nDirección: ${datosPedido.direccion}\nZona/Barrio: ${datosPedido.zona}`
-        : "Retiro / punto a coordinar";
-
-    const metodoPagoTexto = {
-      transferencia: "Transferencia bancaria",
-      efectivo: "Efectivo",
-      mercadopago: "Mercado Pago",
-    }[datosPedido.metodoPago];
-
-    return `Hola Dolce Duck! Quiero coordinar este pedido 🦆💜
-
-Mi pedido es el N°: ${pedidoId}
-
-DATOS DEL CLIENTE
-Nombre: ${datosPedido.nombre}
-Teléfono: ${datosPedido.telefono}
-
-PEDIDO
-${productos}
-
-TOTAL ESTIMADO: $${formatearPrecio(totalCarrito)}
-
-ENTREGA
-${entrega}
-Fecha estimada: ${datosPedido.fecha}
-Horario estimado: ${datosPedido.horario}
-
-PAGO
-Método elegido: ${metodoPagoTexto}
-
-NOTAS
-${datosPedido.notas.trim() || "Sin notas adicionales."}
-
-Quedo atento/a para confirmar disponibilidad y forma de pago.`;
-  };
-
-  const coordinarPorWhatsApp = async (e) => {
+  const confirmarYPagar = async (e) => {
     e.preventDefault();
 
     const errorValidacion = validarPedido();
@@ -152,59 +78,48 @@ Quedo atento/a para confirmar disponibilidad y forma de pago.`;
         ? `${datosPedido.direccion} - ${datosPedido.zona}`
         : "Retiro - a coordinar";
 
-    const res = await fetch('/api/ordenes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        nombre_cliente: datosPedido.nombre,
-        telefono: datosPedido.telefono,
-        direccion: direccionFinal,
-        notas: datosPedido.notas,
-        metodo_pago: datosPedido.metodoPago,
-        metodo_entrega: datosPedido.metodoEntrega,
-        fecha: datosPedido.fecha,
-        horario: datosPedido.horario,
-      }),
-    });
+    try {
+      const res = await fetch("/api/ordenes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre_cliente: datosPedido.nombre,
+          telefono: datosPedido.telefono,
+          direccion: direccionFinal,
+          notas: datosPedido.notas,
+          metodo_pago: "mercadopago",
+          metodo_entrega: datosPedido.metodoEntrega,
+          fecha: datosPedido.fecha,
+          horario: datosPedido.horario,
+        }),
+      });
 
-    const result = await res.json();
+      const result = await res.json();
 
-    if (!res.ok) {
-      console.error("Error al guardar el pedido:", result.error);
-      setError("No se pudo registrar el pedido. Intentá de nuevo.");
-      setEnviando(false);
-      return;
-    }
+      if (!res.ok || !result.init_point) {
+        setError("Hubo un problema al procesar tu pedido. Por favor, intenta de nuevo o comunícate con nosotros.");
+        setEnviando(false);
+        return;
+      }
 
-    if (result.init_point) {
       window.location.href = result.init_point;
-    } else {
-      // Fallback a WhatsApp si MP no devolvió init_point
-      const mensaje = armarMensajeWhatsApp(result.pedidoId);
-      const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`;
-      window.open(url, "_blank", "noopener,noreferrer");
+    } catch {
+      setError("Hubo un problema al procesar tu pedido. Por favor, intenta de nuevo o comunícate con nosotros.");
+      setEnviando(false);
     }
-
-    setEnviando(false);
   };
 
   if (cart.length === 0) {
     return (
       <section className="page-vacia fade-in-up">
-        <h3 className="titulo-seccion">confirmar pedido.</h3>
-
+        <h3 className="titulo-seccion">Confirmar pedido</h3>
         <div className="checkout-wrapper checkout-empty">
-          <h3 className="checkout-title">tu carrito está vacío.</h3>
-
+          <h3 className="checkout-title">Tu carrito está vacío</h3>
           <p className="checkout-subtitle">
-            Antes de coordinar el pago y la entrega, agregá algún producto al
-            carrito.
+            Antes de pagar, agregá algún producto al carrito.
           </p>
-
           <Link href="/menu">
-            <button className="btn-coordinar-pedido">
-              Ver menú
-            </button>
+            <button className="btn-coordinar-pedido">Ver menú</button>
           </Link>
         </div>
       </section>
@@ -213,30 +128,29 @@ Quedo atento/a para confirmar disponibilidad y forma de pago.`;
 
   return (
     <section className="page-vacia fade-in-up">
-      <h3 className="titulo-seccion">¡estás a un solo paso!</h3>
+      <h3 className="titulo-seccion">¡Estás a un solo paso!</h3>
 
       <div className="checkout-wrapper">
-        <h3 className="checkout-title">coordinemos pago y entrega.</h3>
+        <h3 className="checkout-title">Confirmá tu pedido</h3>
 
         <p className="checkout-subtitle">
-          Completá estos datos para que confirmemos tu pedido por Whatsapp.
+          Completá tus datos y pagá de forma segura con Mercado Pago.
         </p>
 
-        <form className="checkout-form" onSubmit={coordinarPorWhatsApp}>
+        <form className="checkout-form" onSubmit={confirmarYPagar}>
+          {/* Resumen */}
           <div className="checkout-section">
-            <h4>resumen de tu pedido.</h4>
+            <h4>Resumen de tu pedido</h4>
 
             <div className="checkout-resumen checkout-resumen-top">
               {cart.map((item) => (
                 <div key={item.cartId} className="checkout-resumen-item">
                   <p>
                     {item.name}
-
                     {item.opciones && (
                       <small>{renderOpcionesTexto(item.opciones)}</small>
                     )}
                   </p>
-
                   <span className="checkout-resumen-precio">
                     ${formatearPrecio(item.precio)}
                   </span>
@@ -244,7 +158,7 @@ Quedo atento/a para confirmar disponibilidad y forma de pago.`;
               ))}
 
               <div className="checkout-total-final">
-                <span>Total estimado</span>
+                <span>Total</span>
                 <strong>${formatearPrecio(totalCarrito)}</strong>
               </div>
             </div>
@@ -256,13 +170,13 @@ Quedo atento/a para confirmar disponibilidad y forma de pago.`;
             </Link>
           </div>
 
+          {/* Datos del cliente */}
           <div className="checkout-section">
-            <h4>tus datos.</h4>
+            <h4>Tus datos</h4>
 
             <div className="checkout-grid">
               <div className="checkout-field">
                 <label>Nombre</label>
-
                 <input
                   type="text"
                   placeholder="Ej: Sofía"
@@ -273,7 +187,6 @@ Quedo atento/a para confirmar disponibilidad y forma de pago.`;
 
               <div className="checkout-field">
                 <label>Teléfono</label>
-
                 <input
                   type="tel"
                   placeholder="Ej: 11 3390-1250"
@@ -284,8 +197,9 @@ Quedo atento/a para confirmar disponibilidad y forma de pago.`;
             </div>
           </div>
 
+          {/* Entrega */}
           <div className="checkout-section">
-            <h4>entrega.</h4>
+            <h4>Entrega</h4>
 
             <div className="checkout-options">
               <label className="checkout-option">
@@ -294,13 +208,10 @@ Quedo atento/a para confirmar disponibilidad y forma de pago.`;
                   name="metodoEntrega"
                   value="envio"
                   checked={datosPedido.metodoEntrega === "envio"}
-                  onChange={(e) =>
-                    actualizarDato("metodoEntrega", e.target.value)
-                  }
+                  onChange={(e) => actualizarDato("metodoEntrega", e.target.value)}
                 />
-
                 <span>
-                  <strong>Envío</strong>
+                  <strong>Envío a domicilio</strong>
                   Lo coordinamos según zona y disponibilidad.
                 </span>
               </label>
@@ -311,14 +222,11 @@ Quedo atento/a para confirmar disponibilidad y forma de pago.`;
                   name="metodoEntrega"
                   value="retiro"
                   checked={datosPedido.metodoEntrega === "retiro"}
-                  onChange={(e) =>
-                    actualizarDato("metodoEntrega", e.target.value)
-                  }
+                  onChange={(e) => actualizarDato("metodoEntrega", e.target.value)}
                 />
-
                 <span>
                   <strong>Retiro</strong>
-                  Coordinamos un punto y horario por WhatsApp.
+                  Te avisamos la dirección una vez confirmado el pago.
                 </span>
               </label>
             </div>
@@ -328,20 +236,16 @@ Quedo atento/a para confirmar disponibilidad y forma de pago.`;
                 <>
                   <div className="checkout-field full">
                     <label>Dirección</label>
-
                     <input
                       type="text"
                       placeholder="Calle, número, piso/depto"
                       value={datosPedido.direccion}
-                      onChange={(e) =>
-                        actualizarDato("direccion", e.target.value)
-                      }
+                      onChange={(e) => actualizarDato("direccion", e.target.value)}
                     />
                   </div>
 
                   <div className="checkout-field">
                     <label>Zona / barrio</label>
-
                     <input
                       type="text"
                       placeholder="Ej: Palermo, Boedo, Recoleta"
@@ -354,90 +258,35 @@ Quedo atento/a para confirmar disponibilidad y forma de pago.`;
 
               <div className="checkout-field">
                 <label>Fecha estimada</label>
-
                 <input
                   type="date"
+                  min={minFecha}
                   value={datosPedido.fecha}
                   onChange={(e) => actualizarDato("fecha", e.target.value)}
                 />
               </div>
 
               <div className="checkout-field">
-                <label>Horario estimado</label>
-
-                <input
-                  type="text"
-                  placeholder="Ej: 16 a 19 hs"
+                <label>Horario disponible</label>
+                <select
                   value={datosPedido.horario}
                   onChange={(e) => actualizarDato("horario", e.target.value)}
-                />
+                >
+                  <option value="">Elegí un horario</option>
+                  <option value="09:00 a 13:00">09:00 a 13:00</option>
+                  <option value="13:00 a 17:00">13:00 a 17:00</option>
+                  <option value="17:00 a 20:00">17:00 a 20:00</option>
+                </select>
               </div>
             </div>
           </div>
 
+          {/* Notas */}
           <div className="checkout-section">
-            <h4>pago.</h4>
-
-            <div className="checkout-options">
-              <label className="checkout-option">
-                <input
-                  type="radio"
-                  name="metodoPago"
-                  value="transferencia"
-                  checked={datosPedido.metodoPago === "transferencia"}
-                  onChange={(e) =>
-                    actualizarDato("metodoPago", e.target.value)
-                  }
-                />
-
-                <span>
-                  <strong>Transferencia</strong>
-                  Te pasamos los datos por WhatsApp.
-                </span>
-              </label>
-
-              <label className="checkout-option">
-                <input
-                  type="radio"
-                  name="metodoPago"
-                  value="mercadopago"
-                  checked={datosPedido.metodoPago === "mercadopago"}
-                  onChange={(e) =>
-                    actualizarDato("metodoPago", e.target.value)
-                  }
-                />
-
-                <span>
-                  <strong>Mercado Pago</strong>
-                  Coordinamos link o alias por WhatsApp.
-                </span>
-              </label>
-
-              <label className="checkout-option">
-                <input
-                  type="radio"
-                  name="metodoPago"
-                  value="efectivo"
-                  checked={datosPedido.metodoPago === "efectivo"}
-                  onChange={(e) =>
-                    actualizarDato("metodoPago", e.target.value)
-                  }
-                />
-
-                <span>
-                  <strong>Efectivo</strong>
-                  Disponible según el tipo de entrega.
-                </span>
-              </label>
-            </div>
-          </div>
-
-          <div className="checkout-section">
-            <h4>notas para la pastelera.</h4>
+            <h4>Notas para la pastelera</h4>
 
             <div className="checkout-field">
-              <label>Comentarios adicionales</label>
-
+              <label>Comentarios adicionales (opcional)</label>
               <textarea
                 placeholder="Ej: Es para un cumpleaños, preferimos tonos pastel, consultar por velitas..."
                 value={datosPedido.notas}
@@ -448,13 +297,17 @@ Quedo atento/a para confirmar disponibilidad y forma de pago.`;
 
           {error && <div className="checkout-error">{error}</div>}
 
-          <button type="submit" className="btn-coordinar-pedido" disabled={enviando}>
-            {enviando ? "Registrando pedido..." : "Enviar pedido por WhatsApp"}
+          <button
+            type="submit"
+            className="btn-coordinar-pedido"
+            disabled={enviando}
+          >
+            {enviando ? "Procesando pedido..." : "Confirmar y Pagar"}
           </button>
 
           <p className="checkout-aclaracion">
-            El pedido queda sujeto a confirmación. El envío puede tener costo
-            adicional según zona.
+            Serás redirigido a Mercado Pago para completar el pago de forma
+            segura. El envío puede tener costo adicional según zona.
           </p>
         </form>
       </div>

@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useCart } from "../../../context/CartContext";
 
 export default function DetalleProducto() {
   const { id } = useParams();
   const router = useRouter();
-  const { agregarAlCarrito, errorCarrito } = useCart();
+  const { agregarAlCarrito, errorCarrito, user } = useCart();
 
   const [producto, setProducto] = useState(null);
   const [opciones, setOpciones] = useState({});
@@ -227,13 +228,22 @@ export default function DetalleProducto() {
             )}
           </div>
 
-          {errorCarrito && (
-            <p className="checkout-error" style={{ marginBottom: '12px' }}>{errorCarrito}</p>
+          {!user ? (
+            <Link href="/login" className="btn-comprar-grande" style={{ display: 'block', textAlign: 'center', textDecoration: 'none', padding: '16px', borderRadius: '30px', background: 'var(--violeta-acento)', color: 'white', fontWeight: 800, fontSize: '1rem', cursor: 'pointer' }}>
+              Inicia sesión aquí para armar tu pedido
+            </Link>
+          ) : (
+            <>
+              {errorCarrito && (
+                <div className="checkout-error" style={{ marginBottom: '12px' }}>
+                  <p>{errorCarrito}</p>
+                </div>
+              )}
+              <button className="btn-comprar-grande" onClick={handleAgregar} disabled={agregando}>
+                {agregando ? 'Agregando...' : 'Añadir al carrito'}
+              </button>
+            </>
           )}
-
-          <button className="btn-comprar-grande" onClick={handleAgregar} disabled={agregando}>
-            {agregando ? 'Agregando...' : 'Añadir al carrito'}
-          </button>
         </div>
       </div>
     </div>

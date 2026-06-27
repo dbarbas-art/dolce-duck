@@ -19,10 +19,21 @@ export default function Login() {
     setError('');
     setCargando(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (error) {
-      setError('Email o contraseña incorrectos. Verificá tus datos.');
+    if (authError) {
+      // Query table to distinguish "email not registered" from "wrong password"
+      const { data } = await supabase
+        .from('usuarios')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (!data) {
+        setError('Este correo electrónico no tiene una cuenta registrada.');
+      } else {
+        setError('Contraseña incorrecta. Verificá tus datos.');
+      }
       setCargando(false);
       return;
     }
@@ -33,13 +44,11 @@ export default function Login() {
 
   return (
     <section className="page-vacia fade-in-up">
-      <h3 className="titulo-seccion">iniciar sesión.</h3>
+      <h3 className="titulo-seccion">Iniciar sesión</h3>
 
       <div className="checkout-wrapper auth-wrapper">
-        <h3 className="checkout-title">bienvenida de nuevo.</h3>
-        <p className="checkout-subtitle">
-          Ingresá para continuar con tu pedido.
-        </p>
+        <h3 className="checkout-title">Bienvenida de nuevo</h3>
+        <p className="checkout-subtitle">Ingresá para continuar con tu pedido.</p>
 
         <form className="checkout-form" onSubmit={handleLogin}>
           <div className="checkout-section">
@@ -53,7 +62,6 @@ export default function Login() {
                 required
               />
             </div>
-
             <div className="checkout-field" style={{ marginTop: '14px' }}>
               <label>Contraseña</label>
               <input
@@ -68,19 +76,13 @@ export default function Login() {
 
           {error && <div className="checkout-error">{error}</div>}
 
-          <button
-            type="submit"
-            className="btn-coordinar-pedido"
-            disabled={cargando}
-          >
+          <button type="submit" className="btn-coordinar-pedido" disabled={cargando}>
             {cargando ? 'Ingresando...' : 'Iniciar sesión'}
           </button>
 
           <p className="checkout-aclaracion">
             ¿No tenés cuenta?{' '}
-            <Link href="/registro" className="auth-link">
-              Registrate acá
-            </Link>
+            <Link href="/registro" className="auth-link">Registrate acá</Link>
           </p>
         </form>
       </div>

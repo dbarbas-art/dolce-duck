@@ -4,6 +4,22 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useCart } from "../../context/CartContext";
 
+function agruparItems(cart) {
+  const mapa = new Map();
+  for (const item of cart) {
+    const clave = `${item.product_id}-${JSON.stringify(item.opciones)}`;
+    if (mapa.has(clave)) {
+      const grupo = mapa.get(clave);
+      grupo.cantidad += 1;
+      grupo.precioTotal += item.precio;
+      grupo.cartIds.push(item.cartId);
+    } else {
+      mapa.set(clave, { ...item, cantidad: 1, precioTotal: item.precio, cartIds: [item.cartId] });
+    }
+  }
+  return Array.from(mapa.values());
+}
+
 export default function Carrito() {
   const { cart, eliminarDelCarrito, totalCarrito, cargando } = useCart();
   const [eliminando, setEliminando] = useState(new Set());
@@ -19,24 +35,23 @@ export default function Carrito() {
       .join(" | ");
   };
 
-  const formatearPrecio = (precio) => {
-    return new Intl.NumberFormat("es-AR").format(precio);
+  const formatearPrecio = (precio) => new Intl.NumberFormat("es-AR").format(precio);
+
+  const handleEliminarGrupo = async (cartIds) => {
+    cartIds.forEach(id => setEliminando(prev => new Set(prev).add(id)));
+    await Promise.all(cartIds.map(id => eliminarDelCarrito(id)));
+    cartIds.forEach(id =>
+      setEliminando(prev => { const next = new Set(prev); next.delete(id); return next; })
+    );
   };
 
-  const handleEliminar = async (cartId) => {
-    setEliminando(prev => new Set(prev).add(cartId));
-    await eliminarDelCarrito(cartId);
-    setEliminando(prev => {
-      const next = new Set(prev);
-      next.delete(cartId);
-      return next;
-    });
-  };
+  const itemsAgrupados = agruparItems(cart);
+  const enEliminacion = (cartIds) => cartIds.some(id => eliminando.has(id));
 
   if (cargando) {
     return (
       <section className="page-vacia fade-in-up">
-        <h3 className="titulo-seccion">tu pedido.</h3>
+        <h3 className="titulo-seccion">Tu pedido</h3>
         <p style={{ textAlign: 'center', color: 'var(--texto)' }}>Cargando tu carrito...</p>
       </section>
     );
@@ -44,7 +59,7 @@ export default function Carrito() {
 
   return (
     <section className="page-vacia fade-in-up">
-      <h3 className="titulo-seccion">tu pedido.</h3>
+      <h3 className="titulo-seccion">Tu pedido</h3>
 
       {cart.length === 0 ? (
         <div className="carrito-vacio">
@@ -55,26 +70,31 @@ export default function Carrito() {
         </div>
       ) : (
         <div className="lista-carrito">
-          {cart.map((item) => (
-            <div key={item.cartId} className="item-carrito">
-              <img src={item.img} alt={item.name} />
+          {itemsAgrupados.map((grupo) => (
+            <div key={grupo.cartIds[0]} className="item-carrito">
+              <img src={grupo.img} alt={grupo.name} />
 
               <div className="item-info">
-                <h4>{item.name}</h4>
-                {item.opciones && (
-                  <p className="opciones-txt">
-                    {renderOpcionesTexto(item.opciones)}
-                  </p>
+                <h4>
+                  {grupo.name}
+                  {grupo.cantidad > 1 && (
+                    <span style={{ color: 'var(--violeta-acento)', fontWeight: 700, marginLeft: '6px' }}>
+                      x{grupo.cantidad}
+                    </span>
+                  )}
+                </h4>
+                {grupo.opciones && (
+                  <p className="opciones-txt">{renderOpcionesTexto(grupo.opciones)}</p>
                 )}
               </div>
 
               <div className="item-precio">
-                <p>${formatearPrecio(item.precio)}</p>
+                <p>${formatearPrecio(grupo.precioTotal)}</p>
                 <button
-                  onClick={() => handleEliminar(item.cartId)}
-                  disabled={eliminando.has(item.cartId)}
+                  onClick={() => handleEliminarGrupo(grupo.cartIds)}
+                  disabled={enEliminacion(grupo.cartIds)}
                 >
-                  {eliminando.has(item.cartId) ? '...' : 'Eliminar'}
+                  {enEliminacion(grupo.cartIds) ? '...' : 'Eliminar'}
                 </button>
               </div>
             </div>
@@ -89,9 +109,7 @@ export default function Carrito() {
           </Link>
 
           <Link href="/menu">
-            <button className="btn-seguir-comprando">
-              Seguir viendo el menú
-            </button>
+            <button className="btn-seguir-comprando">Seguir viendo el menú</button>
           </Link>
         </div>
       )}

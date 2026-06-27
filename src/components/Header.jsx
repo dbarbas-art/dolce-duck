@@ -13,10 +13,14 @@ export default function Header() {
     <>
       <div className="marquee">
         <div className="marquee-inner">
-          <span>Dolce Duck - Pastelería artesanal</span>
-          <span>Envíos gratis en CABA</span>
-          <span>Dolce Duck - Pastelería artesanal</span>
-          <span>Pedí tu antojo hoy</span>
+          <span>Dolce Duck Pastelería Artesanal</span>
+          <span>¡Pedí tu antojo hoy mismo!</span>
+          <span>¡ENVÍO GRATIS EN CABA!</span>
+          <span>Pedidos con 3 días de anticipación mínimo</span>
+          <span>Dolce Duck Pastelería Artesanal</span>
+          <span>¡Pedí tu antojo hoy mismo!</span>
+          <span>¡ENVÍO GRATIS EN CABA!</span>
+          <span>Pedidos con 3 días de anticipación mínimo</span>
         </div>
       </div>
 

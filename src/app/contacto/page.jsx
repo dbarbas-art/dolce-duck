@@ -12,7 +12,7 @@ export default function Contacto() {
           className="contacto-logo" 
         />
         
-        <h3 className="titulo-seccion">estemos en contacto.</h3>
+        <h3 className="titulo-seccion">Estemos en contacto</h3>
         
         <p>
           ¿Tenés alguna duda, querés una mesa dulce para tu evento o simplemente tenés un antojo? 

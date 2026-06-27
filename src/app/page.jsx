@@ -16,8 +16,14 @@ export default function Inicio() {
   }, []);
 
   const productosFiltrados = searchTerm
-    ? productos.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    ? productos.filter(p => p.name.toLowerCase().startsWith(searchTerm.toLowerCase()))
     : [];
+
+  // Block scroll on landing page
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
 
   return (
     <section className="page-hero">
@@ -38,17 +44,21 @@ export default function Inicio() {
 
           {searchTerm && (
             <div className="resultados-busqueda">
-              {productosFiltrados.map(prod => (
-                <Link key={prod.id} href={`/detalle/${prod.id}`}>
-                  <div className="resultado-item">
-                    <img src={prod.img} alt={prod.name} />
-                    <div>
-                      <h4>{prod.name}</h4>
-                      <p>${prod.precio}</p>
+              {productosFiltrados.length === 0 ? (
+                <p className="sin-resultados">¡Ups! No tenemos lo que estás buscando. ¡Te invitamos a explorar el menú completo para tentarte!</p>
+              ) : (
+                productosFiltrados.map(prod => (
+                  <Link key={prod.id} href={`/detalle/${prod.id}`}>
+                    <div className="resultado-item">
+                      <img src={prod.img} alt={prod.name} />
+                      <div>
+                        <h4>{prod.name}</h4>
+                        <p>${prod.precio}</p>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                ))
+              )}
             </div>
           )}
         </div>

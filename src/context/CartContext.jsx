@@ -1,5 +1,6 @@
 'use client';
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
 const CartContext = createContext();
 
@@ -8,13 +9,13 @@ export function CartProvider({ children }) {
   const [showCartPopup, setShowCartPopup] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [errorCarrito, setErrorCarrito] = useState('');
+  const [user, setUser] = useState(null);
 
   const fetchCart = useCallback(async () => {
     setCargando(true);
     try {
       const res = await fetch('/api/carrito');
       const data = await res.json();
-      // Mapeamos id de BD a cartId para mantener compatibilidad con los componentes
       setCart((data.items || []).map(item => ({ ...item, cartId: item.id })));
     } catch (err) {
       console.error('Error al cargar el carrito:', err);
@@ -23,8 +24,20 @@ export function CartProvider({ children }) {
     }
   }, []);
 
+  // Sync auth state and cart whenever session changes
   useEffect(() => {
-    fetchCart();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      fetchCart();
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+      if (event === 'SIGNED_IN') fetchCart();
+      if (event === 'SIGNED_OUT') { setCart([]); setCargando(false); }
+    });
+
+    return () => subscription.unsubscribe();
   }, [fetchCart]);
 
   const agregarAlCarrito = async (producto, opcionesElegidas = null) => {
@@ -68,11 +81,7 @@ export function CartProvider({ children }) {
       body: JSON.stringify({ id: cartId }),
     });
 
-    if (!res.ok) {
-      console.error('Error al eliminar del carrito');
-      return false;
-    }
-
+    if (!res.ok) { console.error('Error al eliminar del carrito'); return false; }
     setCart(prev => prev.filter(item => item.cartId !== cartId));
     return true;
   };
@@ -80,17 +89,8 @@ export function CartProvider({ children }) {
   const totalCarrito = cart.reduce((acc, item) => acc + item.precio, 0);
 
   return (
-    <CartContext.Provider value={{
-      cart,
-      agregarAlCarrito,
-      eliminarDelCarrito,
-      totalCarrito,
-      showCartPopup,
-      cargando,
-      errorCarrito,
-    }}>
+    <CartContext.Provider value={{ cart, agregarAlCarrito, eliminarDelCarrito, totalCarrito, showCartPopup, cargando, errorCarrito, user }}>
       {children}
-
       {showCartPopup && (
         <div className="cart-popup-overlay">
           <div className="cart-popup-box pop-in">
