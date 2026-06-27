@@ -2,67 +2,57 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { catalogoPasteleria } from "../../../data/productos";
+import { supabase } from "@/lib/supabaseClient";
 import { useCart } from "../../../context/CartContext";
 
 export default function DetalleProducto() {
   const { id } = useParams();
   const router = useRouter();
-  const { agregarAlCarrito } = useCart();
+  const { agregarAlCarrito, errorCarrito } = useCart();
 
   const [producto, setProducto] = useState(null);
   const [opciones, setOpciones] = useState({});
+  const [agregando, setAgregando] = useState(false);
 
   useEffect(() => {
-    const encontrado = catalogoPasteleria.find((p) => p.id === parseInt(id));
+    async function fetchProducto() {
+      const { data } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-    if (encontrado) {
-      setProducto(encontrado);
+      if (!data) return;
 
-      if (encontrado.tipo === "torta") {
-        setOpciones({
-          sabor: "Vainilla",
-          relleno: "Dulce de leche",
-          cobertura: "Buttercream",
-          comentario: "",
-        });
-      } else if (encontrado.tipo === "budin") {
-        setOpciones({
-          sabor: "Limón",
-          agregado: "Con glaseado",
-        });
-      } else if (encontrado.tipo === "galletitas") {
-        setOpciones({
-          variedad: "Manteca",
-          glaseado: "Sin glaseado",
-          descripcion: "",
-          archivo: null,
-        });
-      } else if (encontrado.tipo === "pastafrola") {
-        setOpciones({
-          relleno: "Membrillo",
-        });
-      } else if (encontrado.tipo === "pepas") {
-        setOpciones({
-          relleno: "Membrillo",
-        });
+      setProducto(data);
+
+      if (data.tipo === "torta") {
+        setOpciones({ sabor: "Vainilla", relleno: "Dulce de leche", cobertura: "Buttercream", comentario: "" });
+      } else if (data.tipo === "budin") {
+        setOpciones({ sabor: "Limón", agregado: "Con glaseado" });
+      } else if (data.tipo === "galletitas") {
+        setOpciones({ variedad: "Manteca", glaseado: "Sin glaseado", descripcion: "", archivo: null });
+      } else if (data.tipo === "pastafrola") {
+        setOpciones({ relleno: "Membrillo" });
+      } else if (data.tipo === "pepas") {
+        setOpciones({ relleno: "Membrillo" });
       } else {
         setOpciones({});
       }
     }
+    fetchProducto();
   }, [id]);
 
   if (!producto) return <p>Cargando...</p>;
 
   const actualizarOpcion = (campo, valor) => {
-    setOpciones((prev) => ({
-      ...prev,
-      [campo]: valor,
-    }));
+    setOpciones((prev) => ({ ...prev, [campo]: valor }));
   };
 
-  const handleAgregar = () => {
-    agregarAlCarrito(producto, opciones);
+  const handleAgregar = async () => {
+    setAgregando(true);
+    await agregarAlCarrito(producto, opciones);
+    setAgregando(false);
   };
 
   return (
@@ -109,18 +99,14 @@ export default function DetalleProducto() {
                       className="input-text"
                       placeholder="Ej: Colores pasteles, forma de patito..."
                       value={opciones.descripcion || ""}
-                      onChange={(e) =>
-                        actualizarOpcion("descripcion", e.target.value)
-                      }
+                      onChange={(e) => actualizarOpcion("descripcion", e.target.value)}
                     />
 
                     <label>Subir imagen de referencia:</label>
                     <input
                       type="file"
                       className="input-file"
-                      onChange={(e) =>
-                        actualizarOpcion("archivo", e.target.files?.[0]?.name || null)
-                      }
+                      onChange={(e) => actualizarOpcion("archivo", e.target.files?.[0]?.name || null)}
                     />
 
                     <p className="nota-pastelera">
@@ -236,14 +222,17 @@ export default function DetalleProducto() {
 
             {producto.tipo === "normal" && (
               <p className="nota-pastelera">
-                Este producto no necesita personalización. Podés agregarlo directo
-                al carrito.
+                Este producto no necesita personalización. Podés agregarlo directo al carrito.
               </p>
             )}
           </div>
 
-          <button className="btn-comprar-grande" onClick={handleAgregar}>
-            Añadir al carrito
+          {errorCarrito && (
+            <p className="checkout-error" style={{ marginBottom: '12px' }}>{errorCarrito}</p>
+          )}
+
+          <button className="btn-comprar-grande" onClick={handleAgregar} disabled={agregando}>
+            {agregando ? 'Agregando...' : 'Añadir al carrito'}
           </button>
         </div>
       </div>

@@ -20,6 +20,7 @@ export default function Checkout() {
   });
 
   const [error, setError] = useState("");
+  const [enviando, setEnviando] = useState(false);
 
   const numeroWhatsApp = "5491133901250";
 
@@ -82,7 +83,7 @@ export default function Checkout() {
     return "";
   };
 
-  const armarMensajeWhatsApp = () => {
+  const armarMensajeWhatsApp = (pedidoId) => {
     const productos = cart
       .map((item, index) => {
         const opciones = renderOpcionesTexto(item.opciones);
@@ -110,6 +111,8 @@ export default function Checkout() {
 
     return `Hola Dolce Duck! Quiero coordinar este pedido 🦆💜
 
+Mi pedido es el N°: ${pedidoId}
+
 DATOS DEL CLIENTE
 Nombre: ${datosPedido.nombre}
 Teléfono: ${datosPedido.telefono}
@@ -133,22 +136,56 @@ ${datosPedido.notas.trim() || "Sin notas adicionales."}
 Quedo atento/a para confirmar disponibilidad y forma de pago.`;
   };
 
-  const coordinarPorWhatsApp = (e) => {
+  const coordinarPorWhatsApp = async (e) => {
     e.preventDefault();
 
     const errorValidacion = validarPedido();
-
     if (errorValidacion) {
       setError(errorValidacion);
       return;
     }
 
-    const mensaje = armarMensajeWhatsApp();
-    const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(
-      mensaje
-    )}`;
+    setEnviando(true);
 
-    window.open(url, "_blank", "noopener,noreferrer");
+    const direccionFinal =
+      datosPedido.metodoEntrega === "envio"
+        ? `${datosPedido.direccion} - ${datosPedido.zona}`
+        : "Retiro - a coordinar";
+
+    const res = await fetch('/api/ordenes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nombre_cliente: datosPedido.nombre,
+        telefono: datosPedido.telefono,
+        direccion: direccionFinal,
+        notas: datosPedido.notas,
+        metodo_pago: datosPedido.metodoPago,
+        metodo_entrega: datosPedido.metodoEntrega,
+        fecha: datosPedido.fecha,
+        horario: datosPedido.horario,
+      }),
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      console.error("Error al guardar el pedido:", result.error);
+      setError("No se pudo registrar el pedido. Intentá de nuevo.");
+      setEnviando(false);
+      return;
+    }
+
+    if (result.init_point) {
+      window.location.href = result.init_point;
+    } else {
+      // Fallback a WhatsApp si MP no devolvió init_point
+      const mensaje = armarMensajeWhatsApp(result.pedidoId);
+      const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`;
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+
+    setEnviando(false);
   };
 
   if (cart.length === 0) {
@@ -411,8 +448,8 @@ Quedo atento/a para confirmar disponibilidad y forma de pago.`;
 
           {error && <div className="checkout-error">{error}</div>}
 
-          <button type="submit" className="btn-coordinar-pedido">
-            Enviar pedido por WhatsApp
+          <button type="submit" className="btn-coordinar-pedido" disabled={enviando}>
+            {enviando ? "Registrando pedido..." : "Enviar pedido por WhatsApp"}
           </button>
 
           <p className="checkout-aclaracion">

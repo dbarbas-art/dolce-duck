@@ -1,12 +1,22 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { catalogoPasteleria } from '../data/productos';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function Inicio() {
+  const [productos, setProductos] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const productosFiltrados = searchTerm 
-    ? catalogoPasteleria.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+
+  useEffect(() => {
+    async function fetchProductos() {
+      const { data } = await supabase.from('products').select('*');
+      setProductos(data || []);
+    }
+    fetchProductos();
+  }, []);
+
+  const productosFiltrados = searchTerm
+    ? productos.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
     : [];
 
   return (
@@ -14,13 +24,12 @@ export default function Inicio() {
       <div className="hero-text-container fade-in-up">
         <h1 className="hola-title">hola,</h1>
         <h2 className="antojo-subtitle">somos dolce duck.</h2>
-        
+
         <div className="buscador-contenedor">
-          {/* Aquí agregamos el contenedor .buscador y el botón para recuperar el diseño */}
           <div className="buscador">
-            <input 
-              type="text" 
-              placeholder="¿Qué antojo tenés hoy?" 
+            <input
+              type="text"
+              placeholder="¿Qué antojo tenés hoy?"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -45,7 +54,7 @@ export default function Inicio() {
         </div>
 
       </div>
-      
+
       <div className="hero-image-bg">
         <img src="/images/tortainicio.jpg" alt="Fondo" />
       </div>

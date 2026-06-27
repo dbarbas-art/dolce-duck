@@ -1,8 +1,11 @@
-export const catalogoPasteleria = [
+import { supabase } from '@/lib/supabaseClient';
+import { NextResponse } from 'next/server';
+
+const productos = [
   { id: 1, name: 'Brownie', slogan: 'Con merengue y dulce de leche.', img: '/images/brownie.jpg', precio: 35000, tipo: 'normal' },
   { id: 2, name: 'Cinnamon Rolls', slogan: 'Rollos con canela glaseados.', img: '/images/rolls.jpg', precio: 4000, tipo: 'normal' },
   { id: 3, name: 'Budín', slogan: 'De limón, naranja, chocolate y vainilla.', img: '/images/budin.jpg', precio: 5000, tipo: 'budin' },
-  { id: 4, name: 'Pasta Frola', slogan: 'De batata o membrillo.', img: '/images/pastafrola.jpg', precio: 20000, tipo: 'pastafrola' },
+  { id: 4, name: 'Pastafrola', slogan: 'De batata o membrillo.', img: '/images/pastafrola.jpg', precio: 20000, tipo: 'pastafrola' },
   { id: 5, name: 'Pepas con Dulce', slogan: 'De ddl, batata o membrillo. Vienen de a 10 unidades', img: '/images/pepas.jpg', precio: 8000, tipo: 'pepas' },
   { id: 6, name: 'Galletitas', slogan: 'Son un must para tus eventos. Vienen de a 10 unidades', img: '/images/galletitas.jpg', precio: 5000, tipo: 'galletitas' },
   { id: 7, name: 'Medialunas', slogan: 'Infaltables para la merienda.', img: '/images/medialunas.jpg', precio: 15000, tipo: 'normal' },
@@ -12,3 +15,18 @@ export const catalogoPasteleria = [
   { id: 11, name: 'Torta de Ricota', slogan: 'Un clásico que nunca falla.', img: '/images/tortaricota.jpeg', precio: 25000, tipo: 'normal' },
   { id: 12, name: 'Torta Personalizada', slogan: 'Hacemos tu torta soñada. Diseñala a tu gusto.', img: '/images/tortacumple.jpg', precio: 35000, tipo: 'torta' },
 ];
+
+export async function GET() {
+  const { data, error } = await supabase
+    .from('products')
+    .insert(productos)
+    .select();
+
+  if (error) {
+    console.log('Supabase seed error:', error);
+    return NextResponse.json({ ok: false, error }, { status: 500 });
+  }
+
+  console.log('Seed exitoso, filas insertadas:', data);
+  return NextResponse.json({ ok: true, data });
+}

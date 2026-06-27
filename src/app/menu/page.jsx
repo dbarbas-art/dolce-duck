@@ -1,20 +1,41 @@
-import React from 'react';
+'use client';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { catalogoPasteleria } from '../../data/productos';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function Menu() {
+  const [productos, setProductos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+
+  useEffect(() => {
+    async function fetchProductos() {
+      const { data } = await supabase.from('products').select('*');
+      setProductos(data || []);
+      setCargando(false);
+    }
+    fetchProductos();
+  }, []);
+
+  if (cargando) {
+    return (
+      <section className="page-menu fade-in-up">
+        <h3 className="titulo-seccion">nuestro menú.</h3>
+        <p className="cargando">Cargando productos...</p>
+      </section>
+    );
+  }
+
   return (
     <section className="page-menu fade-in-up">
       <h3 className="titulo-seccion">nuestro menú.</h3>
       <div className="grilla-productos">
-        {catalogoPasteleria.map((prod) => (
+        {productos.map((prod) => (
           <div key={prod.id} className="tarjeta-producto">
             <img src={prod.img} alt={prod.name} />
             <div className="tarjeta-info">
               <h4>{prod.name}.</h4>
               <p>{prod.slogan}</p>
               <p className="precio-catalogo">${prod.precio}</p>
-              
               <Link href={`/detalle/${prod.id}`}>
                 <button className="btn-detalle">Ver Detalle</button>
               </Link>
