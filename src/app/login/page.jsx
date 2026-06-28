@@ -37,8 +37,9 @@ function LoginForm() {
       return;
     }
 
-    router.push(redirect);
-    router.refresh();
+    // Recarga completa: garantiza que el middleware del servidor lea las cookies
+    // de Supabase recién seteadas sin race conditions con router.push/refresh.
+    window.location.replace(redirect);
   };
 
   return (
