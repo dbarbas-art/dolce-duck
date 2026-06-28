@@ -151,6 +151,7 @@ export async function GET() {
     .from('pedidos')
     .select('*')
     .eq('user_id', user.id)
+    .neq('estado_pago', 'cancelado')
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -158,5 +159,7 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ ordenes: data });
+  return NextResponse.json({ ordenes: data }, {
+    headers: { 'Cache-Control': 'no-store, max-age=0' },
+  });
 }

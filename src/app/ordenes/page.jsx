@@ -10,7 +10,7 @@ export default function Ordenes() {
 
   useEffect(() => {
     async function fetchOrdenes() {
-      const res = await fetch('/api/ordenes');
+      const res = await fetch('/api/ordenes', { cache: 'no-store' });
       if (res.status === 401) {
         setError('Tenés que iniciar sesión para ver tus pedidos.');
         setCargando(false);
