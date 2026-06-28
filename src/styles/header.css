@@ -109,3 +109,95 @@
   font-size: 0.85rem;
   box-shadow: var(--sombra);
 }
+
+/* ── Perfil ── */
+.perfil-wrapper {
+  position: relative;
+}
+
+.btn-perfil {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s, opacity 0.2s;
+  text-decoration: none;
+}
+
+.btn-perfil--activo {
+  background-color: var(--violeta-acento);
+  color: white;
+}
+
+.btn-perfil--activo:hover {
+  background-color: var(--mauve-pink);
+}
+
+.btn-perfil--inactivo {
+  background-color: rgba(0, 0, 0, 0.08);
+  color: var(--texto);
+  opacity: 0.55;
+}
+
+.btn-perfil--inactivo:hover {
+  opacity: 1;
+}
+
+.perfil-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: var(--blanco);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.13);
+  padding: 16px;
+  min-width: 210px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid rgba(160, 205, 203, 0.25);
+}
+
+.perfil-email {
+  font-size: 0.78rem;
+  color: var(--texto);
+  font-weight: 600;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  padding-bottom: 10px;
+  margin: 0;
+  word-break: break-all;
+}
+
+.perfil-dropdown a {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--violeta-acento);
+  text-decoration: none;
+  padding: 2px 0;
+}
+
+.perfil-dropdown a:hover {
+  text-decoration: underline;
+}
+
+.perfil-dropdown button {
+  background: none;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 7px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--texto);
+  transition: background-color 0.2s;
+  font-family: inherit;
+}
+
+.perfil-dropdown button:hover {
+  background-color: #f5f0ff;
+}

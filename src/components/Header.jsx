@@ -1,13 +1,29 @@
 "use client";
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '../context/CartContext';
+import { supabase } from '../lib/supabaseClient';
+
+function IconoPerfil() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
+      <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+    </svg>
+  );
+}
 
 export default function Header() {
   const pathname = usePathname();
-  const { cart } = useCart();
+  const { cart, user } = useCart();
+  const [menuPerfil, setMenuPerfil] = useState(false);
 
   const isActive = (path) => pathname === path ? 'active' : '';
+
+  const handleLogout = async () => {
+    setMenuPerfil(false);
+    await supabase.auth.signOut();
+  };
 
   return (
     <>
@@ -28,7 +44,7 @@ export default function Header() {
         <Link href="/">
           <img src="/images/LOGO.png" className="logo-fuera" alt="Logo" />
         </Link>
-        
+
         <nav className="navbar-flotante">
           <div className="nav-brand">
             <Link href="/"><span>dolce duck</span></Link>
@@ -40,6 +56,35 @@ export default function Header() {
               <li><Link href="/nosotros"><button className={isActive('/nosotros')}>Nosotros</button></Link></li>
               <li><Link href="/contacto"><button className={isActive('/contacto')}>Contacto</button></Link></li>
             </ul>
+
+            <div className="perfil-wrapper">
+              {user ? (
+                <>
+                  <button
+                    className="btn-perfil btn-perfil--activo"
+                    onClick={() => setMenuPerfil(p => !p)}
+                    onBlur={() => setTimeout(() => setMenuPerfil(false), 150)}
+                    aria-label="Menú de perfil"
+                  >
+                    <IconoPerfil />
+                  </button>
+                  {menuPerfil && (
+                    <div className="perfil-dropdown">
+                      <p className="perfil-email">{user.email}</p>
+                      <Link href="/ordenes" onClick={() => setMenuPerfil(false)}>
+                        Mis pedidos
+                      </Link>
+                      <button onClick={handleLogout}>Cerrar sesión</button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Link href="/login" className="btn-perfil btn-perfil--inactivo" aria-label="Iniciar sesión">
+                  <IconoPerfil />
+                </Link>
+              )}
+            </div>
+
             <Link href="/carrito">
               <button className="btn-carrito">Carrito ({cart.length})</button>
             </Link>

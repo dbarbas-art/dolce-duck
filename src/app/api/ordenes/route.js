@@ -49,21 +49,8 @@ export async function POST(request) {
     return NextResponse.json({ error: 'El carrito está vacío' }, { status: 400 });
   }
 
-  // Total calculado en el servidor
-  const total = itemsCarrito.reduce((acc, item) => acc + item.precio, 0);
-
-  // Extraer sabores y agregados para columnas JSONB indexadas
-  const sabores = [...new Set(
-    itemsCarrito.map(item => item.opciones?.sabor).filter(Boolean)
-  )];
-
-  const agregados = [...new Set(
-    itemsCarrito.flatMap(item => {
-      const agg = item.opciones?.agregados;
-      if (!agg) return [];
-      return Array.isArray(agg) ? agg : [agg];
-    })
-  )];
+  // Total calculado en el servidor (Number() previene concatenación si precio viene como string)
+  const total = itemsCarrito.reduce((acc, item) => acc + Number(item.precio), 0);
 
   const payload = {
     user_id: user.id,
@@ -73,11 +60,8 @@ export async function POST(request) {
     items: itemsCarrito,
     total,
     estado_pago: 'pendiente',
-    fecha_estimada: fecha || null,
     notas: notas || null,
-    comentarios: notas || null,
-    sabores: sabores.length ? JSON.stringify(sabores) : null,
-    agregados: agregados.length ? JSON.stringify(agregados) : null,
+    fecha_estimada: fecha || null,
   };
 
   console.log('[ordenes] Insertando pedido con payload:', JSON.stringify(payload, null, 2));
@@ -104,6 +88,10 @@ export async function POST(request) {
     const mpClient = new MercadoPagoConfig({ accessToken: token });
     const preferenceClient = new Preference(mpClient);
 
+    const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
+      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+      : 'http://localhost:3000';
+
     const itemsMercadoPago = [
       {
         title: 'Pedido Dolce Duck',
@@ -118,9 +106,9 @@ export async function POST(request) {
         items: itemsMercadoPago,
         external_reference: String(pedido.id),
         back_urls: {
-          success: 'http://localhost:3000/pago-exitoso',
-          failure: 'http://localhost:3000/checkout',
-          pending: 'http://localhost:3000/checkout',
+          success: `${baseUrl}/pago-exitoso`,
+          failure: `${baseUrl}/checkout`,
+          pending: `${baseUrl}/checkout`,
         },
         auto_return: 'approved',
       },

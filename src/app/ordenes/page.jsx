@@ -6,6 +6,7 @@ export default function Ordenes() {
   const [ordenes, setOrdenes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
+  const [accionando, setAccionando] = useState({});
 
   useEffect(() => {
     async function fetchOrdenes() {
@@ -38,6 +39,41 @@ export default function Ordenes() {
     pendiente: '#f0a500',
     pagado: '#2e7d6e',
     cancelado: '#b84a4a',
+  };
+
+  const handleCancelar = async (id) => {
+    if (!confirm('¿Cancelar este pedido? Esta acción no se puede deshacer.')) return;
+    setAccionando(prev => ({ ...prev, [id]: 'cancelando' }));
+    try {
+      const res = await fetch(`/api/ordenes/${id}`, { method: 'PATCH' });
+      if (res.ok) {
+        setOrdenes(prev => prev.map(o => o.id === id ? { ...o, estado_pago: 'cancelado' } : o));
+      } else {
+        const data = await res.json();
+        alert(data.error || 'No se pudo cancelar el pedido.');
+      }
+    } catch {
+      alert('Error de conexión. Intentá de nuevo.');
+    } finally {
+      setAccionando(prev => ({ ...prev, [id]: null }));
+    }
+  };
+
+  const handleRetomar = async (id) => {
+    setAccionando(prev => ({ ...prev, [id]: 'retomando' }));
+    try {
+      const res = await fetch(`/api/ordenes/${id}`);
+      const data = await res.json();
+      if (data.init_point) {
+        window.location.href = data.init_point;
+      } else {
+        alert(data.error || 'No se pudo generar el link de pago. Comunicate con nosotros por WhatsApp.');
+        setAccionando(prev => ({ ...prev, [id]: null }));
+      }
+    } catch {
+      alert('Error de conexión. Intentá de nuevo.');
+      setAccionando(prev => ({ ...prev, [id]: null }));
+    }
   };
 
   if (cargando) {
@@ -135,6 +171,34 @@ export default function Ordenes() {
               <p style={{ marginTop: 10, fontSize: '0.82rem', color: '#777' }}>
                 Entrega: {orden.direccion}
               </p>
+            )}
+
+            {orden.estado_pago === 'pendiente' && (
+              <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => handleRetomar(orden.id)}
+                  className="btn-coordinar-pedido"
+                  disabled={!!accionando[orden.id]}
+                  style={{ fontSize: '0.82rem', padding: '9px 20px', flex: 1, minWidth: 140 }}
+                >
+                  {accionando[orden.id] === 'retomando' ? 'Generando link...' : 'Retomar pago'}
+                </button>
+                <button
+                  onClick={() => handleCancelar(orden.id)}
+                  disabled={!!accionando[orden.id]}
+                  style={{
+                    fontSize: '0.82rem', padding: '9px 20px',
+                    background: 'none', border: '1.5px solid #b84a4a',
+                    color: '#b84a4a', borderRadius: 20, cursor: 'pointer',
+                    fontWeight: 700, fontFamily: 'inherit', flex: 1, minWidth: 140,
+                    transition: 'background-color 0.2s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = '#fff0f0'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  {accionando[orden.id] === 'cancelando' ? 'Cancelando...' : 'Cancelar pedido'}
+                </button>
+              </div>
             )}
           </div>
         ))}

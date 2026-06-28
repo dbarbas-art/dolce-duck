@@ -20,6 +20,7 @@ export default function Checkout() {
 
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
+  const [pedidoSinPago, setPedidoSinPago] = useState(null); // { id, total } cuando MP falla pero el pedido se guardó
 
   // Computed client-side only to avoid server/client hydration mismatch
   const [minFecha, setMinFecha] = useState("");
@@ -96,18 +97,45 @@ export default function Checkout() {
 
       const result = await res.json();
 
-      if (!res.ok || !result.init_point) {
-        setError("Hubo un problema al procesar tu pedido. Por favor, intenta de nuevo o comunícate con nosotros.");
+      if (!res.ok) {
+        setError(result.error || "Hubo un problema al procesar tu pedido. Por favor, intentá de nuevo.");
         setEnviando(false);
         return;
       }
 
-      window.location.href = result.init_point;
+      if (result.init_point) {
+        window.location.href = result.init_point;
+        return;
+      }
+
+      // El pedido se guardó en Supabase pero Mercado Pago falló
+      // Mostramos pantalla de fallback con opción de retomar desde Mis pedidos
+      setPedidoSinPago({ id: result.pedidoId, total: result.total });
+      setEnviando(false);
     } catch {
-      setError("Hubo un problema al procesar tu pedido. Por favor, intenta de nuevo o comunícate con nosotros.");
+      setError("Error de conexión. Por favor, verificá tu internet e intentá de nuevo.");
       setEnviando(false);
     }
   };
+
+  // Pedido guardado pero Mercado Pago falló → pantalla de fallback
+  if (pedidoSinPago) {
+    return (
+      <section className="page-vacia fade-in-up">
+        <h3 className="titulo-seccion">Pedido recibido</h3>
+        <div className="checkout-wrapper auth-wrapper" style={{ textAlign: 'center' }}>
+          <h3 className="checkout-title">¡Tu pedido N°{pedidoSinPago.id} está guardado!</h3>
+          <p className="checkout-subtitle">
+            Hubo un problema al conectar con Mercado Pago, pero tu pedido quedó registrado.
+            Podés retomar el pago desde &quot;Mis pedidos&quot; cuando quieras.
+          </p>
+          <Link href="/ordenes">
+            <button className="btn-coordinar-pedido">Ir a Mis pedidos</button>
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   if (cart.length === 0) {
     return (

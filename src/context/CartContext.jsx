@@ -11,12 +11,19 @@ export function CartProvider({ children }) {
   const [errorCarrito, setErrorCarrito] = useState('');
   const [user, setUser] = useState(null);
 
-  const fetchCart = useCallback(async () => {
+  const fetchCart = useCallback(async (userId = null) => {
     setCargando(true);
     try {
       const res = await fetch('/api/carrito');
       const data = await res.json();
-      setCart((data.items || []).map(item => ({ ...item, cartId: item.id })));
+      const items = (data.items || []).map(item => ({ ...item, cartId: item.id }));
+      setCart(items);
+      if (userId) {
+        try {
+          localStorage.setItem(`dd_cart_${userId}`, JSON.stringify(items));
+          localStorage.setItem('dd_last_user', userId);
+        } catch {}
+      }
     } catch (err) {
       console.error('Error al cargar el carrito:', err);
     } finally {
@@ -24,17 +31,34 @@ export function CartProvider({ children }) {
     }
   }, []);
 
-  // Sync auth state and cart whenever session changes
   useEffect(() => {
+    // Hydrate immediately from localStorage before async session resolves
+    try {
+      const cachedUserId = localStorage.getItem('dd_last_user');
+      if (cachedUserId) {
+        const cached = localStorage.getItem(`dd_cart_${cachedUserId}`);
+        if (cached) {
+          setCart(JSON.parse(cached));
+          setCargando(false);
+        }
+      }
+    } catch {}
+
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      fetchCart();
+      const u = session?.user ?? null;
+      setUser(u);
+      fetchCart(u?.id ?? null);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      if (event === 'SIGNED_IN') fetchCart();
-      if (event === 'SIGNED_OUT') { setCart([]); setCargando(false); }
+      const u = session?.user ?? null;
+      setUser(u);
+      if (event === 'SIGNED_IN') fetchCart(u?.id ?? null);
+      if (event === 'SIGNED_OUT') {
+        setCart([]);
+        setCargando(false);
+        try { localStorage.removeItem('dd_last_user'); } catch {}
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -68,7 +92,11 @@ export function CartProvider({ children }) {
     }
 
     const { item } = await res.json();
-    setCart(prev => [...prev, { ...item, cartId: item.id }]);
+    const newCart = [...cart, { ...item, cartId: item.id }];
+    setCart(newCart);
+    if (user?.id) {
+      try { localStorage.setItem(`dd_cart_${user.id}`, JSON.stringify(newCart)); } catch {}
+    }
     setShowCartPopup(true);
     setTimeout(() => setShowCartPopup(false), 2000);
     return true;
@@ -82,11 +110,15 @@ export function CartProvider({ children }) {
     });
 
     if (!res.ok) { console.error('Error al eliminar del carrito'); return false; }
-    setCart(prev => prev.filter(item => item.cartId !== cartId));
+    const newCart = cart.filter(item => item.cartId !== cartId);
+    setCart(newCart);
+    if (user?.id) {
+      try { localStorage.setItem(`dd_cart_${user.id}`, JSON.stringify(newCart)); } catch {}
+    }
     return true;
   };
 
-  const totalCarrito = cart.reduce((acc, item) => acc + item.precio, 0);
+  const totalCarrito = cart.reduce((acc, item) => acc + Number(item.precio), 0);
 
   return (
     <CartContext.Provider value={{ cart, agregarAlCarrito, eliminarDelCarrito, totalCarrito, showCartPopup, cargando, errorCarrito, user }}>
