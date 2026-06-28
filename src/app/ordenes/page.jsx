@@ -36,10 +36,40 @@ export default function Ordenes() {
       day: '2-digit', month: '2-digit', year: 'numeric',
     });
 
-  const badgeColor = {
-    pendiente: '#f0a500',
-    pagado: '#2e7d6e',
-    cancelado: '#b84a4a',
+  // Normaliza los estados de MP ('approved') y los propios ('pagado')
+  const esPagado = (estado) => estado === 'pagado' || estado === 'approved';
+  const esPendiente = (estado) => estado === 'pendiente';
+
+  const estadoConfig = {
+    pendiente: {
+      label: 'Pendiente de pago',
+      bg: '#FFF8E6',
+      color: '#9a6700',
+      border: 'rgba(240, 165, 0, 0.35)',
+      icono: '⏳',
+    },
+    pagado: {
+      label: 'Pagado',
+      bg: '#E8F5F3',
+      color: '#1f6b5e',
+      border: 'rgba(46, 125, 110, 0.35)',
+      icono: '✓',
+    },
+    approved: {
+      label: 'Pagado',
+      bg: '#E8F5F3',
+      color: '#1f6b5e',
+      border: 'rgba(46, 125, 110, 0.35)',
+      icono: '✓',
+    },
+  };
+
+  const getBadge = (estado) => estadoConfig[estado] ?? {
+    label: estado,
+    bg: '#f0f0f0',
+    color: '#666',
+    border: 'rgba(0,0,0,0.1)',
+    icono: '•',
   };
 
   const handleCancelar = async (id) => {
@@ -139,16 +169,26 @@ export default function Ordenes() {
                   Pedido N° {orden.id}
                 </p>
               </div>
-              <span style={{
-                background: badgeColor[orden.estado_pago] ?? '#aaa',
-                color: 'white',
-                padding: '4px 12px',
-                borderRadius: 20,
-                fontSize: '0.78rem',
-                fontWeight: 700,
-              }}>
-                {orden.estado_pago}
-              </span>
+              {(() => {
+                const badge = getBadge(orden.estado_pago);
+                return (
+                  <span style={{
+                    background: badge.bg,
+                    color: badge.color,
+                    border: `1.5px solid ${badge.border}`,
+                    padding: '5px 14px',
+                    borderRadius: 20,
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                  }}>
+                    <span style={{ fontSize: '0.85rem' }}>{badge.icono}</span>
+                    {badge.label}
+                  </span>
+                );
+              })()}
             </div>
 
             <div className="checkout-resumen checkout-resumen-top">
@@ -181,7 +221,7 @@ export default function Ordenes() {
               </p>
             )}
 
-            {orden.estado_pago === 'pendiente' && (
+            {esPendiente(orden.estado_pago) && (
               <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' }}>
                 <button
                   onClick={() => handleRetomar(orden.id)}
@@ -205,6 +245,22 @@ export default function Ordenes() {
                   onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                   {accionando[orden.id] === 'cancelando' ? 'Cancelando...' : 'Cancelar pedido'}
+                </button>
+              </div>
+            )}
+
+            {esPagado(orden.estado_pago) && (
+              <div style={{ marginTop: 16 }}>
+                <button
+                  disabled
+                  style={{
+                    fontSize: '0.8rem', padding: '9px 20px',
+                    background: '#f5f5f5', border: '1.5px solid #ddd',
+                    color: '#aaa', borderRadius: 20, cursor: 'not-allowed',
+                    fontWeight: 600, fontFamily: 'inherit', width: '100%',
+                  }}
+                >
+                  No se puede cancelar un pedido pagado
                 </button>
               </div>
             )}
