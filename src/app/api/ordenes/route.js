@@ -23,10 +23,6 @@ async function createClient() {
   );
 }
 
-const mpClient = new MercadoPagoConfig({
-  accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
-});
-
 // POST /api/ordenes
 export async function POST(request) {
   const supabase = await createClient();
@@ -36,7 +32,7 @@ export async function POST(request) {
     return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
   }
 
-  const { nombre_cliente, telefono, direccion, notas, metodo_pago, metodo_entrega, fecha, horario } =
+  const { nombre_cliente, telefono, direccion, notas, fecha } =
     await request.json();
 
   // Fuente de verdad: carrito desde la BD
@@ -46,6 +42,7 @@ export async function POST(request) {
     .eq('user_id', user.id);
 
   if (errorCarrito) {
+    console.error('[ordenes] Error al leer carrito:', errorCarrito);
     return NextResponse.json({ error: errorCarrito.message }, { status: 500 });
   }
   if (!itemsCarrito || itemsCarrito.length === 0) {
@@ -55,7 +52,7 @@ export async function POST(request) {
   // Total calculado en el servidor
   const total = itemsCarrito.reduce((acc, item) => acc + item.precio, 0);
 
-  // Extraer sabores y agregados de opciones para columnas indexadas
+  // Extraer sabores y agregados para columnas JSONB indexadas
   const sabores = [...new Set(
     itemsCarrito.map(item => item.opciones?.sabor).filter(Boolean)
   )];
@@ -68,67 +65,81 @@ export async function POST(request) {
     })
   )];
 
-  // Insertar pedido con user_id
+  const payload = {
+    user_id: user.id,
+    nombre_cliente,
+    telefono,
+    direccion,
+    items: itemsCarrito,
+    total,
+    estado_pago: 'pendiente',
+    fecha_estimada: fecha || null,
+    notas: notas || null,
+    comentarios: notas || null,
+    sabores: sabores.length ? JSON.stringify(sabores) : null,
+    agregados: agregados.length ? JSON.stringify(agregados) : null,
+  };
+
+  console.log('[ordenes] Insertando pedido con payload:', JSON.stringify(payload, null, 2));
+
   const { data: pedido, error: errorPedido } = await supabase
     .from('pedidos')
-    .insert({
-      user_id: user.id,
-      nombre_cliente,
-      telefono,
-      direccion,
-      items: itemsCarrito,
-      total,
-      estado_pago: 'pendiente',
-      notas: notas || null,
-      comentarios: notas || null,
-      sabores: sabores.length ? sabores : null,
-      agregados: agregados.length ? agregados : null,
-      metodo_pago: metodo_pago || null,
-      metodo_entrega: metodo_entrega || null,
-      fecha_estimada: fecha || null,
-      horario_estimado: horario || null,
-    })
+    .insert(payload)
     .select('id')
     .single();
 
   if (errorPedido) {
+    console.error('[ordenes] Error al insertar pedido:', errorPedido);
     return NextResponse.json({ error: errorPedido.message }, { status: 500 });
   }
+
+  console.log('[ordenes] Pedido creado con id:', pedido.id);
 
   // Generar preferencia de Mercado Pago
   let init_point = null;
   try {
+    const token = process.env.MERCADO_PAGO_ACCESS_TOKEN;
+    if (!token) throw new Error('MERCADO_PAGO_ACCESS_TOKEN no definido');
+
+    const mpClient = new MercadoPagoConfig({ accessToken: token });
     const preferenceClient = new Preference(mpClient);
-    const mpResponse = await preferenceClient.create({
+
+    const itemsMercadoPago = [
+      {
+        title: 'Pedido Dolce Duck',
+        quantity: 1,
+        unit_price: total,
+        currency_id: 'ARS',
+      },
+    ];
+
+    const preferenceData = {
       body: {
-        items: [
-          {
-            title: 'Pedido Dolce Duck',
-            quantity: 1,
-            unit_price: total,
-            currency_id: 'ARS',
-          },
-        ],
+        items: itemsMercadoPago,
         external_reference: String(pedido.id),
         back_urls: {
-          success: 'http://localhost:3000/ordenes',
+          success: 'http://localhost:3000/pago-exitoso',
           failure: 'http://localhost:3000/checkout',
-          pending: 'http://localhost:3000/ordenes',
+          pending: 'http://localhost:3000/checkout',
         },
         auto_return: 'approved',
       },
-    });
+    };
+
+    console.log('[MP] preferenceData enviado:', JSON.stringify(preferenceData, null, 2));
+
+    const mpResponse = await preferenceClient.create(preferenceData);
 
     init_point = mpResponse.init_point;
+    console.log('[ordenes] init_point generado:', init_point);
 
-    // Guardar el preference id en el pedido
     await supabase
       .from('pedidos')
       .update({ mp_preference_id: mpResponse.id })
       .eq('id', pedido.id);
   } catch (mpError) {
-    console.error('Error al crear preferencia MP:', mpError);
-    // No se interrumpe el flujo: el pedido ya está guardado
+    console.error('[ordenes] Error al crear preferencia MP:', mpError);
+    // El pedido ya está guardado; el frontend mostrará error de pago
   }
 
   // Vaciar carrito
@@ -153,6 +164,7 @@ export async function GET() {
     .order('created_at', { ascending: false });
 
   if (error) {
+    console.error('[ordenes] Error al leer historial:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
