@@ -47,7 +47,8 @@ export default function Ordenes() {
     try {
       const res = await fetch(`/api/ordenes/${id}`, { method: 'PATCH' });
       if (res.ok) {
-        setOrdenes(prev => prev.map(o => o.id === id ? { ...o, estado_pago: 'cancelado' } : o));
+        // Elimina el pedido cancelado de la lista de forma inmediata
+        setOrdenes(prev => prev.filter(o => o.id !== id));
       } else {
         const data = await res.json();
         alert(data.error || 'No se pudo cancelar el pedido.');
