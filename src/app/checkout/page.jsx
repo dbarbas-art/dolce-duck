@@ -21,7 +21,6 @@ export default function Checkout() {
   const [erroresCampo, setErroresCampo] = useState({});
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
-  const [pedidoSinPago, setPedidoSinPago] = useState(null);
 
   const [minFecha, setMinFecha] = useState("");
   useEffect(() => {
@@ -129,13 +128,8 @@ export default function Checkout() {
         return;
       }
 
-      if (result.init_point) {
-        window.location.href = result.init_point;
-        return;
-      }
-
-      setPedidoSinPago({ id: result.pedidoId, total: result.total });
-      setEnviando(false);
+      // Pedido guardado → pantalla de pago independiente
+      window.location.href = `/pago/${result.pedidoId}`;
     } catch {
       setError("Error de conexión. Por favor, verificá tu internet e intentá de nuevo.");
       setEnviando(false);
@@ -145,23 +139,6 @@ export default function Checkout() {
   const err = (campo) => erroresCampo[campo];
   const inputClass = (campo) => err(campo) ? "input-error" : "";
 
-  if (pedidoSinPago) {
-    return (
-      <section className="page-vacia fade-in-up">
-        <h3 className="titulo-seccion">Pedido recibido</h3>
-        <div className="checkout-wrapper auth-wrapper" style={{ textAlign: "center" }}>
-          <h3 className="checkout-title">¡Tu pedido N°{pedidoSinPago.id} está guardado!</h3>
-          <p className="checkout-subtitle">
-            Hubo un problema al conectar con Mercado Pago, pero tu pedido quedó registrado.
-            Podés retomar el pago desde &quot;Mis pedidos&quot; cuando quieras.
-          </p>
-          <Link href="/ordenes">
-            <button className="btn-coordinar-pedido">Ir a Mis pedidos</button>
-          </Link>
-        </div>
-      </section>
-    );
-  }
 
   if (cart.length === 0) {
     return (

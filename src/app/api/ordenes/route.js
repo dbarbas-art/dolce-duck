@@ -3,7 +3,6 @@ export const dynamic = 'force-dynamic';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { MercadoPagoConfig, Preference } from 'mercadopago';
 
 async function createClient() {
   const cookieStore = await cookies();
@@ -79,63 +78,10 @@ export async function POST(request) {
     return NextResponse.json({ error: errorPedido.message }, { status: 500 });
   }
 
-  console.log('[ordenes] Pedido creado con id:', pedido.id);
-
-  // Generar preferencia de Mercado Pago
-  let init_point = null;
-  try {
-    const token = process.env.MERCADO_PAGO_ACCESS_TOKEN;
-    if (!token) throw new Error('MERCADO_PAGO_ACCESS_TOKEN no definido');
-
-    const mpClient = new MercadoPagoConfig({ accessToken: token });
-    const preferenceClient = new Preference(mpClient);
-
-    const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-      : 'http://localhost:3000';
-
-    const itemsMercadoPago = [
-      {
-        title: 'Pedido Dolce Duck',
-        quantity: 1,
-        unit_price: total,
-        currency_id: 'ARS',
-      },
-    ];
-
-    const preferenceData = {
-      body: {
-        items: itemsMercadoPago,
-        external_reference: String(pedido.id),
-        back_urls: {
-          success: `${baseUrl}/pago-exitoso`,
-          failure: `${baseUrl}/checkout`,
-          pending: `${baseUrl}/checkout`,
-        },
-        auto_return: 'approved',
-      },
-    };
-
-    console.log('[MP] preferenceData enviado:', JSON.stringify(preferenceData, null, 2));
-
-    const mpResponse = await preferenceClient.create(preferenceData);
-
-    init_point = mpResponse.init_point;
-    console.log('[ordenes] init_point generado:', init_point);
-
-    await supabase
-      .from('pedidos')
-      .update({ mp_preference_id: mpResponse.id })
-      .eq('id', pedido.id);
-  } catch (mpError) {
-    console.error('[ordenes] Error al crear preferencia MP:', mpError);
-    // El pedido ya está guardado; el frontend mostrará error de pago
-  }
-
-  // Vaciar carrito
+  // Vaciar carrito — el pedido ya quedó registrado
   await supabase.from('carrito').delete().eq('user_id', user.id);
 
-  return NextResponse.json({ pedidoId: pedido.id, total, init_point });
+  return NextResponse.json({ pedidoId: pedido.id, total });
 }
 
 // GET /api/ordenes — historial del usuario autenticado

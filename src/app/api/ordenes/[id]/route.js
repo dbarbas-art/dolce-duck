@@ -21,9 +21,12 @@ async function createClient() {
   );
 }
 
-// PATCH /api/ordenes/[id] — cancelar pedido pendiente
+// PATCH /api/ordenes/[id] — cancelar pedido o marcarlo como pagado
 export async function PATCH(request, { params }) {
   const { id } = await params;
+  const body = await request.json().catch(() => ({}));
+  const { action = 'cancelar' } = body;
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -37,6 +40,33 @@ export async function PATCH(request, { params }) {
     .single();
 
   if (!pedido) return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 });
+
+  // ── Marcar como pagado (simulación webhook MP) ──
+  if (action === 'marcar_pagado') {
+    if (pedido.estado_pago === 'pagado' || pedido.estado_pago === 'approved') {
+      return NextResponse.json({ ok: true, yaEstabaPagado: true });
+    }
+
+    const { data: filasActualizadas, error } = await supabase
+      .from('pedidos')
+      .update({ estado_pago: 'pagado' })
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .select();
+
+    if (error) {
+      console.error('[PATCH marcar_pagado] Error:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    if (!filasActualizadas || filasActualizadas.length === 0) {
+      return NextResponse.json({ error: '0 filas actualizadas. Revisá las políticas RLS.' }, { status: 403 });
+    }
+
+    revalidatePath('/ordenes');
+    return NextResponse.json({ ok: true });
+  }
+
+  // ── Cancelar (acción por defecto) ──
   if (pedido.estado_pago !== 'pendiente') {
     return NextResponse.json({ error: 'Solo podés cancelar pedidos pendientes' }, { status: 400 });
   }
@@ -49,14 +79,13 @@ export async function PATCH(request, { params }) {
     .select();
 
   if (error) {
-    console.error('[PATCH ordenes] Error Supabase:', error);
+    console.error('[PATCH cancelar] Error Supabase:', error);
     return NextResponse.json({ error: `Error de base de datos: ${error.message}` }, { status: 500 });
   }
-
   if (!filasActualizadas || filasActualizadas.length === 0) {
-    console.error('[PATCH ordenes] 0 filas actualizadas — id:', id, '| user:', user.id);
+    console.error('[PATCH cancelar] 0 filas actualizadas — id:', id, '| user:', user.id);
     return NextResponse.json({
-      error: 'El pedido no pudo actualizarse en la base de datos (0 filas afectadas). Revisá las políticas RLS de la tabla "pedidos" en Supabase.',
+      error: 'El pedido no pudo actualizarse (0 filas afectadas). Revisá las políticas RLS de la tabla "pedidos" en Supabase.',
     }, { status: 403 });
   }
 

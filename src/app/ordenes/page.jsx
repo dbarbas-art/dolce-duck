@@ -91,22 +91,6 @@ export default function Ordenes() {
     }
   };
 
-  const handleRetomar = async (id) => {
-    setAccionando(prev => ({ ...prev, [id]: 'retomando' }));
-    try {
-      const res = await fetch(`/api/ordenes/${id}`);
-      const data = await res.json();
-      if (data.init_point) {
-        window.location.href = data.init_point;
-      } else {
-        alert(data.error || 'No se pudo generar el link de pago. Comunicate con nosotros por WhatsApp.');
-        setAccionando(prev => ({ ...prev, [id]: null }));
-      }
-    } catch {
-      alert('Error de conexión. Intentá de nuevo.');
-      setAccionando(prev => ({ ...prev, [id]: null }));
-    }
-  };
 
   if (cargando) {
     return (
@@ -223,14 +207,14 @@ export default function Ordenes() {
 
             {esPendiente(orden.estado_pago) && (
               <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' }}>
-                <button
-                  onClick={() => handleRetomar(orden.id)}
-                  className="btn-coordinar-pedido"
-                  disabled={!!accionando[orden.id]}
-                  style={{ fontSize: '0.82rem', padding: '9px 20px', flex: 1, minWidth: 140 }}
-                >
-                  {accionando[orden.id] === 'retomando' ? 'Generando link...' : 'Retomar pago'}
-                </button>
+                <Link href={`/pago/${orden.id}`} style={{ flex: 1, minWidth: 140 }}>
+                  <button
+                    className="btn-coordinar-pedido"
+                    style={{ fontSize: '0.82rem', padding: '9px 20px', width: '100%' }}
+                  >
+                    Pagar ahora
+                  </button>
+                </Link>
                 <button
                   onClick={() => handleCancelar(orden.id)}
                   disabled={!!accionando[orden.id]}
