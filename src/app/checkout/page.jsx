@@ -18,11 +18,11 @@ export default function Checkout() {
     notas: "",
   });
 
+  const [erroresCampo, setErroresCampo] = useState({});
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
-  const [pedidoSinPago, setPedidoSinPago] = useState(null); // { id, total } cuando MP falla pero el pedido se guardó
+  const [pedidoSinPago, setPedidoSinPago] = useState(null);
 
-  // Computed client-side only to avoid server/client hydration mismatch
   const [minFecha, setMinFecha] = useState("");
   useEffect(() => {
     const d = new Date();
@@ -46,29 +46,55 @@ export default function Checkout() {
 
   const actualizarDato = (campo, valor) => {
     setDatosPedido((prev) => ({ ...prev, [campo]: valor }));
-    if (error) setError("");
+    if (erroresCampo[campo]) {
+      setErroresCampo((prev) => ({ ...prev, [campo]: "" }));
+    }
   };
 
-  const validarPedido = () => {
-    if (cart.length === 0)
-      return "El carrito está vacío. Agregá algo rico antes de confirmar.";
-    if (!datosPedido.nombre.trim()) return "Falta completar tu nombre.";
-    if (!datosPedido.telefono.trim()) return "Falta completar tu teléfono.";
-    if (!datosPedido.fecha) return "Falta elegir una fecha estimada.";
-    if (!datosPedido.horario.trim()) return "Falta completar un horario estimado.";
-    if (datosPedido.metodoEntrega === "envio") {
-      if (!datosPedido.direccion.trim()) return "Falta completar la dirección de envío.";
-      if (!datosPedido.zona.trim()) return "Falta completar la zona o barrio.";
+  const validarCampos = () => {
+    const errs = {};
+
+    if (!datosPedido.nombre.trim()) {
+      errs.nombre = "El nombre es obligatorio.";
     }
-    return "";
+
+    const soloDigitos = datosPedido.telefono.replace(/\D/g, "");
+    if (!datosPedido.telefono.trim()) {
+      errs.telefono = "El teléfono es obligatorio.";
+    } else if (soloDigitos.length < 8) {
+      errs.telefono = "El teléfono debe contener solo números y al menos 8 dígitos.";
+    }
+
+    if (!datosPedido.fecha) {
+      errs.fecha = "Elegí una fecha estimada.";
+    }
+
+    if (!datosPedido.horario) {
+      errs.horario = "Elegí un horario disponible.";
+    }
+
+    if (datosPedido.metodoEntrega === "envio") {
+      if (!datosPedido.direccion.trim()) {
+        errs.direccion = "La dirección de envío es obligatoria.";
+      }
+      if (!datosPedido.zona.trim()) {
+        errs.zona = "La zona o barrio es obligatoria.";
+      }
+    }
+
+    return errs;
   };
 
   const confirmarYPagar = async (e) => {
     e.preventDefault();
+    setError("");
 
-    const errorValidacion = validarPedido();
-    if (errorValidacion) {
-      setError(errorValidacion);
+    const errs = validarCampos();
+    if (Object.keys(errs).length > 0) {
+      setErroresCampo(errs);
+      // Scroll suave al primer campo con error
+      const primerCampoId = Object.keys(errs)[0];
+      document.getElementById(`field-${primerCampoId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
@@ -108,8 +134,6 @@ export default function Checkout() {
         return;
       }
 
-      // El pedido se guardó en Supabase pero Mercado Pago falló
-      // Mostramos pantalla de fallback con opción de retomar desde Mis pedidos
       setPedidoSinPago({ id: result.pedidoId, total: result.total });
       setEnviando(false);
     } catch {
@@ -118,12 +142,14 @@ export default function Checkout() {
     }
   };
 
-  // Pedido guardado pero Mercado Pago falló → pantalla de fallback
+  const err = (campo) => erroresCampo[campo];
+  const inputClass = (campo) => err(campo) ? "input-error" : "";
+
   if (pedidoSinPago) {
     return (
       <section className="page-vacia fade-in-up">
         <h3 className="titulo-seccion">Pedido recibido</h3>
-        <div className="checkout-wrapper auth-wrapper" style={{ textAlign: 'center' }}>
+        <div className="checkout-wrapper auth-wrapper" style={{ textAlign: "center" }}>
           <h3 className="checkout-title">¡Tu pedido N°{pedidoSinPago.id} está guardado!</h3>
           <p className="checkout-subtitle">
             Hubo un problema al conectar con Mercado Pago, pero tu pedido quedó registrado.
@@ -160,75 +186,74 @@ export default function Checkout() {
 
       <div className="checkout-wrapper">
         <h3 className="checkout-title">Confirmá tu pedido</h3>
-
         <p className="checkout-subtitle">
           Completá tus datos y pagá de forma segura con Mercado Pago.
         </p>
 
-        <form className="checkout-form" onSubmit={confirmarYPagar}>
+        <form className="checkout-form" onSubmit={confirmarYPagar} noValidate>
+
           {/* Resumen */}
           <div className="checkout-section">
             <h4>Resumen de tu pedido</h4>
-
             <div className="checkout-resumen checkout-resumen-top">
               {cart.map((item) => (
                 <div key={item.cartId} className="checkout-resumen-item">
                   <p>
                     {item.name}
-                    {item.opciones && (
-                      <small>{renderOpcionesTexto(item.opciones)}</small>
-                    )}
+                    {item.opciones && <small>{renderOpcionesTexto(item.opciones)}</small>}
                   </p>
-                  <span className="checkout-resumen-precio">
-                    ${formatearPrecio(item.precio)}
-                  </span>
+                  <span className="checkout-resumen-precio">${formatearPrecio(item.precio)}</span>
                 </div>
               ))}
-
               <div className="checkout-total-final">
                 <span>Total</span>
                 <strong>${formatearPrecio(totalCarrito)}</strong>
               </div>
             </div>
-
             <Link href="/carrito">
-              <button type="button" className="btn-editar-carrito">
-                Editar carrito
-              </button>
+              <button type="button" className="btn-editar-carrito">Editar carrito</button>
             </Link>
           </div>
 
           {/* Datos del cliente */}
           <div className="checkout-section">
             <h4>Tus datos</h4>
-
             <div className="checkout-grid">
-              <div className="checkout-field">
+
+              <div className="checkout-field" id="field-nombre">
                 <label>Nombre</label>
                 <input
                   type="text"
                   placeholder="Ej: Sofía"
                   value={datosPedido.nombre}
+                  className={inputClass("nombre")}
                   onChange={(e) => actualizarDato("nombre", e.target.value)}
                 />
+                {err("nombre") && <span className="campo-error-msg">{err("nombre")}</span>}
               </div>
 
-              <div className="checkout-field">
+              <div className="checkout-field" id="field-telefono">
                 <label>Teléfono</label>
                 <input
                   type="tel"
                   placeholder="Ej: 11 3390-1250"
                   value={datosPedido.telefono}
-                  onChange={(e) => actualizarDato("telefono", e.target.value)}
+                  className={inputClass("telefono")}
+                  onChange={(e) => {
+                    // Filtra letras; permite dígitos, espacios, guiones y paréntesis
+                    const val = e.target.value.replace(/[^0-9\s\-()]/g, "");
+                    actualizarDato("telefono", val);
+                  }}
                 />
+                {err("telefono") && <span className="campo-error-msg">{err("telefono")}</span>}
               </div>
+
             </div>
           </div>
 
           {/* Entrega */}
           <div className="checkout-section">
             <h4>Entrega</h4>
-
             <div className="checkout-options">
               <label className="checkout-option">
                 <input
@@ -243,7 +268,6 @@ export default function Checkout() {
                   Lo coordinamos según zona y disponibilidad.
                 </span>
               </label>
-
               <label className="checkout-option">
                 <input
                   type="radio"
@@ -262,42 +286,49 @@ export default function Checkout() {
             <div className="checkout-grid checkout-grid-extra">
               {datosPedido.metodoEntrega === "envio" && (
                 <>
-                  <div className="checkout-field full">
+                  <div className="checkout-field full" id="field-direccion">
                     <label>Dirección</label>
                     <input
                       type="text"
                       placeholder="Calle, número, piso/depto"
                       value={datosPedido.direccion}
+                      className={inputClass("direccion")}
                       onChange={(e) => actualizarDato("direccion", e.target.value)}
                     />
+                    {err("direccion") && <span className="campo-error-msg">{err("direccion")}</span>}
                   </div>
 
-                  <div className="checkout-field">
+                  <div className="checkout-field" id="field-zona">
                     <label>Zona / barrio</label>
                     <input
                       type="text"
                       placeholder="Ej: Palermo, Boedo, Recoleta"
                       value={datosPedido.zona}
+                      className={inputClass("zona")}
                       onChange={(e) => actualizarDato("zona", e.target.value)}
                     />
+                    {err("zona") && <span className="campo-error-msg">{err("zona")}</span>}
                   </div>
                 </>
               )}
 
-              <div className="checkout-field">
+              <div className="checkout-field" id="field-fecha">
                 <label>Fecha estimada</label>
                 <input
                   type="date"
                   min={minFecha}
                   value={datosPedido.fecha}
+                  className={inputClass("fecha")}
                   onChange={(e) => actualizarDato("fecha", e.target.value)}
                 />
+                {err("fecha") && <span className="campo-error-msg">{err("fecha")}</span>}
               </div>
 
-              <div className="checkout-field">
+              <div className="checkout-field" id="field-horario">
                 <label>Horario disponible</label>
                 <select
                   value={datosPedido.horario}
+                  className={inputClass("horario")}
                   onChange={(e) => actualizarDato("horario", e.target.value)}
                 >
                   <option value="">Elegí un horario</option>
@@ -305,6 +336,7 @@ export default function Checkout() {
                   <option value="13:00 a 17:00">13:00 a 17:00</option>
                   <option value="17:00 a 20:00">17:00 a 20:00</option>
                 </select>
+                {err("horario") && <span className="campo-error-msg">{err("horario")}</span>}
               </div>
             </div>
           </div>
@@ -312,7 +344,6 @@ export default function Checkout() {
           {/* Notas */}
           <div className="checkout-section">
             <h4>Notas para la pastelera</h4>
-
             <div className="checkout-field">
               <label>Comentarios adicionales (opcional)</label>
               <textarea
@@ -325,17 +356,13 @@ export default function Checkout() {
 
           {error && <div className="checkout-error">{error}</div>}
 
-          <button
-            type="submit"
-            className="btn-coordinar-pedido"
-            disabled={enviando}
-          >
+          <button type="submit" className="btn-coordinar-pedido" disabled={enviando}>
             {enviando ? "Procesando pedido..." : "Confirmar y Pagar"}
           </button>
 
           <p className="checkout-aclaracion">
-            Serás redirigido a Mercado Pago para completar el pago de forma
-            segura. El envío puede tener costo adicional según zona.
+            Serás redirigido a Mercado Pago para completar el pago de forma segura.
+            El envío puede tener costo adicional según zona.
           </p>
         </form>
       </div>

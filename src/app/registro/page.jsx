@@ -28,15 +28,22 @@ export default function Registro() {
 
     setCargando(true);
 
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
-      setError(error.message);
+      setError('Ocurrió un error al crear la cuenta. Por favor, intentá de nuevo.');
       setCargando(false);
       return;
     }
 
-    setMensaje('¡Cuenta creada! Revisá tu email para confirmar el registro y luego iniciá sesión.');
+    // Supabase devuelve identities vacío cuando el email ya está registrado
+    if (!data?.user?.identities || data.user.identities.length === 0) {
+      setError('Este email ya está registrado. Por favor, iniciá sesión.');
+      setCargando(false);
+      return;
+    }
+
+    setMensaje('¡Registro exitoso! Por favor, revisá tu casilla de email (y la carpeta de spam) para confirmar tu cuenta antes de iniciar sesión.');
     setCargando(false);
   };
 
