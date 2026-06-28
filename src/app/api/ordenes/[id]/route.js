@@ -41,12 +41,24 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ error: 'Solo podés cancelar pedidos pendientes' }, { status: 400 });
   }
 
-  const { error } = await supabase
+  const { data: filasActualizadas, error } = await supabase
     .from('pedidos')
     .update({ estado_pago: 'cancelado' })
-    .eq('id', id);
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .select();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error('[PATCH ordenes] Error Supabase:', error);
+    return NextResponse.json({ error: `Error de base de datos: ${error.message}` }, { status: 500 });
+  }
+
+  if (!filasActualizadas || filasActualizadas.length === 0) {
+    console.error('[PATCH ordenes] 0 filas actualizadas — id:', id, '| user:', user.id);
+    return NextResponse.json({
+      error: 'El pedido no pudo actualizarse en la base de datos (0 filas afectadas). Revisá las políticas RLS de la tabla "pedidos" en Supabase.',
+    }, { status: 403 });
+  }
 
   revalidatePath('/ordenes');
   return NextResponse.json({ ok: true });

@@ -7,6 +7,7 @@ export default function Ordenes() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [accionando, setAccionando] = useState({});
+  const [errorAccion, setErrorAccion] = useState('');
 
   useEffect(() => {
     async function fetchOrdenes() {
@@ -43,18 +44,18 @@ export default function Ordenes() {
 
   const handleCancelar = async (id) => {
     if (!confirm('¿Cancelar este pedido? Esta acción no se puede deshacer.')) return;
+    setErrorAccion('');
     setAccionando(prev => ({ ...prev, [id]: 'cancelando' }));
     try {
       const res = await fetch(`/api/ordenes/${id}`, { method: 'PATCH' });
+      const data = await res.json();
       if (res.ok) {
-        // Elimina el pedido cancelado de la lista de forma inmediata
         setOrdenes(prev => prev.filter(o => o.id !== id));
       } else {
-        const data = await res.json();
-        alert(data.error || 'No se pudo cancelar el pedido.');
+        setErrorAccion(`Error al cancelar el pedido: ${data.error || 'Error desconocido.'}`);
       }
-    } catch {
-      alert('Error de conexión. Intentá de nuevo.');
+    } catch (e) {
+      setErrorAccion(`Error de conexión: ${e.message || 'Intentá de nuevo.'}`);
     } finally {
       setAccionando(prev => ({ ...prev, [id]: null }));
     }
@@ -121,6 +122,12 @@ export default function Ordenes() {
   return (
     <section className="page-vacia fade-in-up">
       <h3 className="titulo-seccion">Mis pedidos</h3>
+
+      {errorAccion && (
+        <div className="checkout-error" style={{ maxWidth: 780, margin: '0 auto 16px', whiteSpace: 'pre-wrap' }}>
+          {errorAccion}
+        </div>
+      )}
 
       <div style={{ maxWidth: 780, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
         {ordenes.map((orden) => (
