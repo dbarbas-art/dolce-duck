@@ -36,11 +36,67 @@ export async function PATCH(request, { params }) {
   const body = await request.json().catch(() => ({}));
   const { action = 'cancelar' } = body;
 
+  // Verificar sesión con cliente normal (necesita cookies del usuario)
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
 
+  // ── Marcar como pagado (redirect de Mercado Pago) ──────────────────────────
+  // Usa admin client en TODO el flujo para evitar que RLS bloquee la operación.
+  // La verificación de ownership se hace explícitamente en JS.
+  if (action === 'marcar_pagado') {
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('[marcar_pagado] SUPABASE_SERVICE_ROLE_KEY no está configurada');
+      return NextResponse.json({ error: 'Configuración incompleta del servidor' }, { status: 500 });
+    }
+
+    const adminSupabase = createAdminClient();
+
+    // SELECT con admin client — bypassa RLS, no puede ser bloqueado por políticas
+    const { data: pedido, error: selectError } = await adminSupabase
+      .from('pedidos')
+      .select('id, user_id, estado_pago')
+      .eq('id', id)
+      .single();
+
+    if (selectError || !pedido) {
+      console.error('[marcar_pagado] Pedido no encontrado. id:', id, '| error:', selectError?.message);
+      return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 });
+    }
+
+    // Verificación de propiedad explícita (reemplaza lo que haría RLS)
+    if (pedido.user_id !== user.id) {
+      console.error('[marcar_pagado] Intento no autorizado. pedido.user_id:', pedido.user_id, '| user.id:', user.id);
+      return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+    }
+
+    // Idempotencia: si ya está pagado, OK sin hacer nada
+    if (pedido.estado_pago === 'pagado' || pedido.estado_pago === 'approved') {
+      return NextResponse.json({ ok: true, yaEstabaPagado: true });
+    }
+
+    const { referencia_pago } = body;
+
+    // UPDATE con admin client — bypassa RLS
+    const { error: updateError } = await adminSupabase
+      .from('pedidos')
+      .update({
+        estado_pago:     'pagado',
+        referencia_pago: referencia_pago ?? null,
+        pagado_en:       new Date().toISOString(),
+      })
+      .eq('id', id);
+
+    if (updateError) {
+      console.error('[marcar_pagado] Error al actualizar:', updateError.message);
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
+
+    revalidatePath('/ordenes');
+    return NextResponse.json({ ok: true });
+  }
+
+  // ── Cancelar (acción por defecto) ───────────────────────────────────────────
   const { data: pedido } = await supabase
     .from('pedidos')
     .select('id, user_id, estado_pago')
@@ -50,36 +106,6 @@ export async function PATCH(request, { params }) {
 
   if (!pedido) return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 });
 
-  // ── Marcar como pagado (redirect de Mercado Pago) ──
-  if (action === 'marcar_pagado') {
-    if (pedido.estado_pago === 'pagado' || pedido.estado_pago === 'approved') {
-      return NextResponse.json({ ok: true, yaEstabaPagado: true });
-    }
-
-    const { referencia_pago } = body;
-
-    // Admin client bypassa RLS — seguro porque verificamos usuario + ownership arriba
-    const adminSupabase = createAdminClient();
-    const { error } = await adminSupabase
-      .from('pedidos')
-      .update({
-        estado_pago:     'pagado',
-        referencia_pago: referencia_pago ?? null,
-        pagado_en:       new Date().toISOString(),
-      })
-      .eq('id', id)
-      .eq('user_id', user.id);
-
-    if (error) {
-      console.error('[PATCH marcar_pagado] Error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    revalidatePath('/ordenes');
-    return NextResponse.json({ ok: true });
-  }
-
-  // ── Cancelar (acción por defecto) ──
   if (pedido.estado_pago !== 'pendiente') {
     return NextResponse.json({ error: 'Solo podés cancelar pedidos pendientes' }, { status: 400 });
   }
