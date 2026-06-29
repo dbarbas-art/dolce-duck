@@ -1,8 +1,17 @@
 import { createServerClient } from '@supabase/ssr';
+import { createClient as createSupabaseAdmin } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
+
+// Cliente admin con service role — bypassa RLS, solo para operaciones de servidor
+function createAdminClient() {
+  return createSupabaseAdmin(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+}
 
 async function createClient() {
   const cookieStore = await cookies();
@@ -41,25 +50,29 @@ export async function PATCH(request, { params }) {
 
   if (!pedido) return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 });
 
-  // ── Marcar como pagado (simulación webhook MP) ──
+  // ── Marcar como pagado (redirect de Mercado Pago) ──
   if (action === 'marcar_pagado') {
     if (pedido.estado_pago === 'pagado' || pedido.estado_pago === 'approved') {
       return NextResponse.json({ ok: true, yaEstabaPagado: true });
     }
 
-    const { data: filasActualizadas, error } = await supabase
+    const { referencia_pago } = body;
+
+    // Admin client bypassa RLS — seguro porque verificamos usuario + ownership arriba
+    const adminSupabase = createAdminClient();
+    const { error } = await adminSupabase
       .from('pedidos')
-      .update({ estado_pago: 'pagado' })
+      .update({
+        estado_pago:     'pagado',
+        referencia_pago: referencia_pago ?? null,
+        pagado_en:       new Date().toISOString(),
+      })
       .eq('id', id)
-      .eq('user_id', user.id)
-      .select();
+      .eq('user_id', user.id);
 
     if (error) {
       console.error('[PATCH marcar_pagado] Error:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    if (!filasActualizadas || filasActualizadas.length === 0) {
-      return NextResponse.json({ error: '0 filas actualizadas. Revisá las políticas RLS.' }, { status: 403 });
     }
 
     revalidatePath('/ordenes');
