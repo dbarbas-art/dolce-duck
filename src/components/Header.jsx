@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '../context/CartContext';
@@ -17,6 +17,15 @@ export default function Header() {
   const pathname = usePathname();
   const { cart, user } = useCart();
   const [menuPerfil, setMenuPerfil] = useState(false);
+  const [esAdmin, setEsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setEsAdmin(false); return; }
+    fetch('/api/auth/rol')
+      .then(r => r.json())
+      .then(data => setEsAdmin(data.rol === 'admin'))
+      .catch(() => setEsAdmin(false));
+  }, [user?.id]);
 
   const isActive = (path) => pathname === path ? 'active' : '';
 
@@ -71,6 +80,27 @@ export default function Header() {
                   {menuPerfil && (
                     <div className="perfil-dropdown">
                       <p className="perfil-email">{user.email}</p>
+                      {esAdmin && (
+                        <Link
+                          href="/admin"
+                          onClick={() => setMenuPerfil(false)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            background: 'rgba(157, 116, 178, 0.1)',
+                            border: '1px solid rgba(157, 116, 178, 0.25)',
+                            borderRadius: 10,
+                            padding: '5px 10px',
+                            fontSize: '0.83rem',
+                            fontWeight: 700,
+                            color: 'var(--violeta-acento)',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          ⚙️ Panel Admin
+                        </Link>
+                      )}
                       <Link href="/ordenes" onClick={() => setMenuPerfil(false)}>
                         Mis pedidos
                       </Link>
