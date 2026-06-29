@@ -9,7 +9,7 @@ export default function Inicio() {
 
   useEffect(() => {
     async function fetchProductos() {
-      const { data } = await supabase.from('products').select('*');
+      const { data } = await supabase.from('products').select('*').eq('active', true);
       setProductos(data || []);
     }
     fetchProductos();
