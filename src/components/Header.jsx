@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '../context/CartContext';
@@ -18,6 +18,18 @@ export default function Header() {
   const { cart, user } = useCart();
   const [menuPerfil, setMenuPerfil] = useState(false);
   const [esAdmin, setEsAdmin] = useState(false);
+  const perfilRef = useRef(null);
+
+  useEffect(() => {
+    if (!menuPerfil) return;
+    function handleClickOutside(e) {
+      if (perfilRef.current && !perfilRef.current.contains(e.target)) {
+        setMenuPerfil(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuPerfil]);
 
   useEffect(() => {
     if (!user) { setEsAdmin(false); return; }
@@ -66,13 +78,12 @@ export default function Header() {
               <li><Link href="/contacto"><button className={isActive('/contacto')}>Contacto</button></Link></li>
             </ul>
 
-            <div className="perfil-wrapper">
+            <div className="perfil-wrapper" ref={perfilRef}>
               {user ? (
                 <>
                   <button
                     className="btn-perfil btn-perfil--activo"
                     onClick={() => setMenuPerfil(p => !p)}
-                    onBlur={() => setTimeout(() => setMenuPerfil(false), 150)}
                     aria-label="Menú de perfil"
                   >
                     <IconoPerfil />
