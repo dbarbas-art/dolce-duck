@@ -9,6 +9,7 @@ function PagoExitosoContent() {
   // MP envía: status, external_reference (nuestro pedidoId), collection_status, payment_id
   const status = searchParams.get('status') || searchParams.get('collection_status');
   const pedidoId = searchParams.get('external_reference');
+  const paymentId = searchParams.get('payment_id') || searchParams.get('collection_id');
 
   const { cart, eliminarDelCarrito } = useCart();
   const [actualizando, setActualizando] = useState(true);
@@ -29,7 +30,10 @@ function PagoExitosoContent() {
         const res = await fetch(`/api/ordenes/${pedidoId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'marcar_pagado' }),
+          body: JSON.stringify({
+            action: 'marcar_pagado',
+            referencia_pago: paymentId,
+          }),
         });
         setResultado(res.ok ? 'ok' : 'error');
       } catch {
