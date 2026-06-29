@@ -16,7 +16,7 @@ export default function Inicio() {
   }, []);
 
   const productosFiltrados = searchTerm
-    ? productos.filter(p => p.name.toLowerCase().startsWith(searchTerm.toLowerCase()))
+    ? productos.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
     : [];
 
   // Block scroll on landing page
