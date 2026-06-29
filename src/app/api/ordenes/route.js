@@ -33,7 +33,7 @@ export async function POST(request) {
     return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
   }
 
-  const { nombre_cliente, telefono, direccion, notas, fecha } =
+  const { nombre_cliente, telefono, direccion, notas, fecha, metodo_pago } =
     await request.json();
 
   // Fuente de verdad: carrito desde la BD
@@ -53,35 +53,35 @@ export async function POST(request) {
   // Total calculado en el servidor (Number() previene concatenación si precio viene como string)
   const total = itemsCarrito.reduce((acc, item) => acc + Number(item.precio), 0);
 
-  const payload = {
-    user_id: user.id,
-    nombre_cliente,
-    telefono,
-    direccion,
-    items: itemsCarrito,
-    total,
-    estado_pago: 'pendiente',
-    notas: notas || null,
-    fecha_estimada: fecha || null,
-  };
+  // Invocar stored procedure — transacción atómica con validación de stock
+  const { data: resultado, error: errorRpc } = await supabase.rpc(
+    'crear_orden_completa',
+    {
+      p_nombre_cliente: nombre_cliente,
+      p_telefono:       telefono,
+      p_direccion:      direccion,
+      p_total:          total,
+      p_notas:          notas ?? null,
+      p_fecha_estimada: fecha ?? null,
+      p_metodo_pago:    metodo_pago ?? 'mercadopago',
+      p_items:          itemsCarrito,
+    }
+  );
 
-  console.log('[ordenes] Insertando pedido con payload:', JSON.stringify(payload, null, 2));
+  if (errorRpc) {
+    console.error('[ordenes] Error en crear_orden_completa:', errorRpc);
 
-  const { data: pedido, error: errorPedido } = await supabase
-    .from('pedidos')
-    .insert(payload)
-    .select('id')
-    .single();
-
-  if (errorPedido) {
-    console.error('[ordenes] Error al insertar pedido:', errorPedido);
-    return NextResponse.json({ error: errorPedido.message }, { status: 500 });
+    // Stock insuficiente → 422 Unprocessable Entity para que el frontend lo muestre
+    if (errorRpc.message?.includes('Stock insuficiente')) {
+      return NextResponse.json({ error: errorRpc.message }, { status: 422 });
+    }
+    return NextResponse.json({ error: errorRpc.message }, { status: 500 });
   }
 
-  // Vaciar carrito — el pedido ya quedó registrado
+  // Vaciar carrito — el pedido quedó registrado y el stock descontado
   await supabase.from('carrito').delete().eq('user_id', user.id);
 
-  return NextResponse.json({ pedidoId: pedido.id, total });
+  return NextResponse.json({ pedidoId: resultado.pedido_id, total });
 }
 
 // GET /api/ordenes — historial del usuario autenticado
