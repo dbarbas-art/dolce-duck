@@ -1,11 +1,19 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useCart } from "../../context/CartContext";
 
-export default function Checkout() {
+function CheckoutForm() {
   const { cart, totalCarrito } = useCart();
+  const searchParams = useSearchParams();
+  // MP agrega estos params al volver de un pago (aprobado, pendiente o rechazado)
+  const vieneDeMercadoPago =
+    searchParams.has("collection_status") ||
+    searchParams.has("payment_id") ||
+    searchParams.has("preference_id") ||
+    searchParams.has("external_reference");
 
   const [datosPedido, setDatosPedido] = useState({
     nombre: "",
@@ -23,8 +31,10 @@ export default function Checkout() {
   const [enviando, setEnviando] = useState(false);
 
   const [minFecha, setMinFecha] = useState("");
+  const [hoy, setHoy] = useState("");
   useEffect(() => {
     const d = new Date();
+    setHoy(d.toISOString().split("T")[0]);
     d.setDate(d.getDate() + 3);
     setMinFecha(d.toISOString().split("T")[0]);
   }, []);
@@ -66,8 +76,10 @@ export default function Checkout() {
 
     if (!datosPedido.fecha) {
       errs.fecha = "Elegí una fecha estimada.";
+    } else if (datosPedido.fecha < hoy) {
+      errs.fecha = "Esa fecha ya pasó. Elegí una fecha a partir de hoy.";
     } else if (datosPedido.fecha < minFecha) {
-      errs.fecha = "La fecha elegida ya pasó. Elegí una fecha a partir de hoy (con al menos 3 días de anticipación).";
+      errs.fecha = "Necesitamos al menos 3 días de anticipación para preparar tu pedido. Elegí una fecha un poco más adelante.";
     }
 
     if (!datosPedido.horario) {
@@ -143,6 +155,23 @@ export default function Checkout() {
 
 
   if (cart.length === 0) {
+    if (vieneDeMercadoPago) {
+      return (
+        <section className="page-vacia fade-in-up">
+          <h3 className="titulo-seccion">Confirmar pedido</h3>
+          <div className="checkout-wrapper checkout-empty">
+            <h3 className="checkout-title">No se completó el pago</h3>
+            <p className="checkout-subtitle">
+              Tu pedido ya había quedado guardado, pero el pago no se realizó. Retomá el pago desde tus pedidos.
+            </p>
+            <Link href="/ordenes">
+              <button className="btn-coordinar-pedido">Ir a mis pedidos</button>
+            </Link>
+          </div>
+        </section>
+      );
+    }
+
     return (
       <section className="page-vacia fade-in-up">
         <h3 className="titulo-seccion">Confirmar pedido</h3>
@@ -346,5 +375,13 @@ export default function Checkout() {
         </form>
       </div>
     </section>
+  );
+}
+
+export default function Checkout() {
+  return (
+    <Suspense fallback={null}>
+      <CheckoutForm />
+    </Suspense>
   );
 }
