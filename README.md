@@ -2,6 +2,10 @@
 
 **Dolce Duck** es un e-commerce de pastelería artesanal: los usuarios navegan el menú de productos, arman su carrito, coordinan fecha y forma de entrega, y pagan online de forma segura con Mercado Pago. Incluye un panel de administración para gestionar productos y pedidos.
 
+## 🌐 Proyecto en Vivo
+
+La aplicación está desplegada en producción a través de Vercel y se puede acceder desde: [https://dolce-duck.vercel.app](https://dolce-duck.vercel.app)
+
 ## ✨ Funcionalidades
 
 - Catálogo de productos con detalle, opciones personalizables e imágenes.
