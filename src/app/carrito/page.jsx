@@ -37,12 +37,12 @@ export default function Carrito() {
 
   const formatearPrecio = (precio) => new Intl.NumberFormat("es-AR").format(precio);
 
-  const handleEliminarGrupo = async (cartIds) => {
-    cartIds.forEach(id => setEliminando(prev => new Set(prev).add(id)));
-    await Promise.all(cartIds.map(id => eliminarDelCarrito(id)));
-    cartIds.forEach(id =>
-      setEliminando(prev => { const next = new Set(prev); next.delete(id); return next; })
-    );
+  // Saca 1 sola unidad (1 sola fila del carrito) por click, nunca el grupo entero de una.
+  const handleQuitarUnidad = async (cartIds) => {
+    const id = cartIds[cartIds.length - 1];
+    setEliminando(prev => new Set(prev).add(id));
+    await eliminarDelCarrito(id);
+    setEliminando(prev => { const next = new Set(prev); next.delete(id); return next; });
   };
 
   const itemsAgrupados = agruparItems(cart);
@@ -91,10 +91,10 @@ export default function Carrito() {
               <div className="item-precio">
                 <p>${formatearPrecio(grupo.precioTotal)}</p>
                 <button
-                  onClick={() => handleEliminarGrupo(grupo.cartIds)}
+                  onClick={() => handleQuitarUnidad(grupo.cartIds)}
                   disabled={enEliminacion(grupo.cartIds)}
                 >
-                  {enEliminacion(grupo.cartIds) ? '...' : 'Eliminar'}
+                  {enEliminacion(grupo.cartIds) ? '...' : grupo.cantidad > 1 ? 'Quitar 1' : 'Eliminar'}
                 </button>
               </div>
             </div>

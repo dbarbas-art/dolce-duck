@@ -12,11 +12,35 @@ function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [erroresCampo, setErroresCampo] = useState({});
   const [cargando, setCargando] = useState(false);
+
+  const err = (campo) => erroresCampo[campo];
+  const inputClass = (campo) => (err(campo) ? 'input-error' : '');
+
+  const validarCampos = () => {
+    const errs = {};
+    if (!email.trim()) {
+      errs.email = 'El email es obligatorio.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errs.email = 'Ingresá un email válido.';
+    }
+    if (!password) {
+      errs.password = 'La contraseña es obligatoria.';
+    }
+    return errs;
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+
+    const errs = validarCampos();
+    if (Object.keys(errs).length > 0) {
+      setErroresCampo(errs);
+      return;
+    }
+    setErroresCampo({});
     setCargando(true);
 
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
@@ -50,7 +74,7 @@ function LoginForm() {
         <h3 className="checkout-title">Bienvenida de nuevo</h3>
         <p className="checkout-subtitle">Ingresá para continuar con tu pedido.</p>
 
-        <form className="checkout-form" onSubmit={handleLogin}>
+        <form className="checkout-form" onSubmit={handleLogin} noValidate>
           <div className="checkout-section">
             <div className="checkout-field">
               <label>Email</label>
@@ -58,9 +82,13 @@ function LoginForm() {
                 type="email"
                 placeholder="tu@email.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                className={inputClass('email')}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (erroresCampo.email) setErroresCampo((prev) => ({ ...prev, email: '' }));
+                }}
               />
+              {err('email') && <span className="campo-error-msg">{err('email')}</span>}
             </div>
             <div className="checkout-field" style={{ marginTop: '14px' }}>
               <label>Contraseña</label>
@@ -68,9 +96,13 @@ function LoginForm() {
                 type="password"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                className={inputClass('password')}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (erroresCampo.password) setErroresCampo((prev) => ({ ...prev, password: '' }));
+                }}
               />
+              {err('password') && <span className="campo-error-msg">{err('password')}</span>}
             </div>
           </div>
 

@@ -66,6 +66,8 @@ export default function Checkout() {
 
     if (!datosPedido.fecha) {
       errs.fecha = "Elegí una fecha estimada.";
+    } else if (datosPedido.fecha < minFecha) {
+      errs.fecha = "La fecha elegida ya pasó. Elegí una fecha a partir de hoy (con al menos 3 días de anticipación).";
     }
 
     if (!datosPedido.horario) {

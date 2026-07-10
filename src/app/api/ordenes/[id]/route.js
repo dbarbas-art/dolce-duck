@@ -155,9 +155,7 @@ export async function GET(request, { params }) {
   const token = process.env.MERCADO_PAGO_ACCESS_TOKEN;
   if (!token) return NextResponse.json({ error: 'Mercado Pago no configurado' }, { status: 500 });
 
-  const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-    ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-    : 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dolce-duck.vercel.app';
 
   try {
     const mpClient = new MercadoPagoConfig({ accessToken: token });
