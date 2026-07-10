@@ -73,12 +73,16 @@ function CheckoutForm() {
   const [enviando, setEnviando] = useState(false);
 
   const [minFecha, setMinFecha] = useState("");
+  const [maxFecha, setMaxFecha] = useState("");
   const [hoy, setHoy] = useState("");
   useEffect(() => {
     const d = new Date();
     setHoy(d.toISOString().split("T")[0]);
     d.setDate(d.getDate() + 3);
     setMinFecha(d.toISOString().split("T")[0]);
+    const dMax = new Date();
+    dMax.setDate(dMax.getDate() + 30);
+    setMaxFecha(dMax.toISOString().split("T")[0]);
   }, []);
 
   const renderOpcionesTexto = (opc) => {
@@ -122,6 +126,8 @@ function CheckoutForm() {
       errs.fecha = "Esa fecha ya pasó. Elegí una fecha a partir de hoy.";
     } else if (datosPedido.fecha < minFecha) {
       errs.fecha = "Necesitamos al menos 3 días de anticipación para preparar tu pedido. Elegí una fecha un poco más adelante.";
+    } else if (datosPedido.fecha > maxFecha) {
+      errs.fecha = "Solo tomamos pedidos con hasta 30 días de anticipación. Elegí una fecha más cercana.";
     }
 
     if (!datosPedido.horario) {
@@ -376,6 +382,7 @@ function CheckoutForm() {
                 <input
                   type="date"
                   min={minFecha}
+                  max={maxFecha}
                   value={datosPedido.fecha}
                   className={inputClass("fecha")}
                   onChange={(e) => actualizarDato("fecha", e.target.value)}
