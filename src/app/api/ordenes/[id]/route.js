@@ -172,8 +172,8 @@ export async function GET(request, { params }) {
         external_reference: String(pedido.id),
         back_urls: {
           success: `${baseUrl}/pago-exitoso`,
-          failure: `${baseUrl}/checkout`,
-          pending: `${baseUrl}/checkout`,
+          failure: `${baseUrl}/ordenes`,
+          pending: `${baseUrl}/ordenes`,
         },
         auto_return: 'approved',
       },

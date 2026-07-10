@@ -2,18 +2,60 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "../../context/CartContext";
 
 function CheckoutForm() {
-  const { cart, totalCarrito } = useCart();
+  const { cart, totalCarrito, cargando } = useCart();
+  const router = useRouter();
   const searchParams = useSearchParams();
-  // MP agrega estos params al volver de un pago (aprobado, pendiente o rechazado)
+
+  // Los back_urls de Mercado Pago ya no apuntan acá para failure/pending,
+  // pero por las dudas alguien llegue a /checkout con esos params (link viejo,
+  // back del navegador, etc.), se lo manda directo a /ordenes.
   const vieneDeMercadoPago =
     searchParams.has("collection_status") ||
     searchParams.has("payment_id") ||
     searchParams.has("preference_id") ||
+    searchParams.has("status") ||
     searchParams.has("external_reference");
+
+  useEffect(() => {
+    if (!cargando && cart.length === 0 && vieneDeMercadoPago) {
+      router.replace("/ordenes");
+    }
+  }, [cargando, cart.length, vieneDeMercadoPago, router]);
+
+  // Si el carrito está vacío sin params de MP, puede ser porque nunca hubo
+  // nada o porque ya se confirmó un pedido y el pago no se completó (el
+  // carrito se vacía al crear la orden). Se consulta la API para saber si hay
+  // un pedido pendiente en vez de confiar en query params, porque no siempre llegan.
+  const [verificandoPedido, setVerificandoPedido] = useState(true);
+  const [tienePedidoPendiente, setTienePedidoPendiente] = useState(false);
+
+  useEffect(() => {
+    if (cargando || cart.length > 0 || vieneDeMercadoPago) {
+      setVerificandoPedido(false);
+      return;
+    }
+
+    let cancelado = false;
+    setVerificandoPedido(true);
+
+    fetch("/api/ordenes", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : { ordenes: [] }))
+      .then((data) => {
+        if (cancelado) return;
+        const hayPendiente = (data.ordenes || []).some((o) => o.estado_pago === "pendiente");
+        setTienePedidoPendiente(hayPendiente);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelado) setVerificandoPedido(false);
+      });
+
+    return () => { cancelado = true; };
+  }, [cargando, cart.length, vieneDeMercadoPago]);
 
   const [datosPedido, setDatosPedido] = useState({
     nombre: "",
@@ -154,8 +196,17 @@ function CheckoutForm() {
   const inputClass = (campo) => err(campo) ? "input-error" : "";
 
 
+  if (cargando || (cart.length === 0 && (verificandoPedido || vieneDeMercadoPago))) {
+    return (
+      <section className="page-vacia fade-in-up">
+        <h3 className="titulo-seccion">Confirmar pedido</h3>
+        <p style={{ textAlign: "center", color: "var(--texto)" }}>Cargando...</p>
+      </section>
+    );
+  }
+
   if (cart.length === 0) {
-    if (vieneDeMercadoPago) {
+    if (tienePedidoPendiente) {
       return (
         <section className="page-vacia fade-in-up">
           <h3 className="titulo-seccion">Confirmar pedido</h3>
