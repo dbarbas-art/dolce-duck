@@ -75,14 +75,34 @@ function CheckoutForm() {
   const [minFecha, setMinFecha] = useState("");
   const [maxFecha, setMaxFecha] = useState("");
   const [hoy, setHoy] = useState("");
+
+  // Arma YYYY-MM-DD con los componentes locales del Date. No usar
+  // toISOString() acá: convierte a UTC y en huso horario negativo (AR es
+  // UTC-3) la fecha salta al día siguiente pasadas las 21hs, haciendo que
+  // "hoy" quede adelantado y fechas válidas se marquen como "ya pasadas".
+  const aFechaLocal = (date) => {
+    const anio = date.getFullYear();
+    const mes = String(date.getMonth() + 1).padStart(2, "0");
+    const dia = String(date.getDate()).padStart(2, "0");
+    return `${anio}-${mes}-${dia}`;
+  };
+
+  const formatearFechaCorta = (fechaIso) => {
+    if (!fechaIso) return "";
+    const [, mes, dia] = fechaIso.split("-");
+    return `${dia}/${mes}`;
+  };
+
   useEffect(() => {
-    const d = new Date();
-    setHoy(d.toISOString().split("T")[0]);
-    d.setDate(d.getDate() + 3);
-    setMinFecha(d.toISOString().split("T")[0]);
+    setHoy(aFechaLocal(new Date()));
+
+    const dMin = new Date();
+    dMin.setDate(dMin.getDate() + 3);
+    setMinFecha(aFechaLocal(dMin));
+
     const dMax = new Date();
     dMax.setDate(dMax.getDate() + 30);
-    setMaxFecha(dMax.toISOString().split("T")[0]);
+    setMaxFecha(aFechaLocal(dMax));
   }, []);
 
   const renderOpcionesTexto = (opc) => {
@@ -123,9 +143,9 @@ function CheckoutForm() {
     if (!datosPedido.fecha) {
       errs.fecha = "Elegí una fecha estimada.";
     } else if (datosPedido.fecha < hoy) {
-      errs.fecha = "Esa fecha ya pasó. Elegí una fecha a partir de hoy.";
+      errs.fecha = `Esa fecha ya pasó. Elegí una fecha a partir de hoy (${formatearFechaCorta(hoy)}).`;
     } else if (datosPedido.fecha < minFecha) {
-      errs.fecha = "Necesitamos al menos 3 días de anticipación para preparar tu pedido. Elegí una fecha un poco más adelante.";
+      errs.fecha = `Necesitamos al menos 3 días para preparar tu pedido. Elegí una fecha a partir del ${formatearFechaCorta(minFecha)}.`;
     } else if (datosPedido.fecha > maxFecha) {
       errs.fecha = "Solo tomamos pedidos con hasta 30 días de anticipación. Elegí una fecha más cercana.";
     }
