@@ -52,7 +52,7 @@ SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key-de-supabase
 MERCADO_PAGO_ACCESS_TOKEN=tu-access-token-de-mercado-pago
 
 # URL pública del sitio (usada, entre otras cosas, para las back_urls de Mercado Pago)
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_SITE_URL=http://localhost:3000 # (Para desarrollo local. En producción usar la URL de Vercel)
 ```
 
 ### 4. Levantar el servidor de desarrollo
@@ -69,6 +69,14 @@ La aplicación queda disponible en [http://localhost:3000](http://localhost:3000
 npm run build   # build de producción
 npm run start   # levanta el build de producción
 ```
+
+## 💳 Credenciales de prueba (Mercado Pago)
+
+Para probar el flujo de pago en el entorno de pruebas de Mercado Pago, se puede usar el siguiente usuario comprador:
+
+- **Usuario Comprador:** TESTUSER2271779796093539101
+- **Contraseña:** 5GIsKOBBHg
+- **Código de Verificación (si lo pide):** 536528
 
 ---
 
