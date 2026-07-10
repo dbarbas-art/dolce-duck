@@ -92,11 +92,13 @@ export function CartProvider({ children }) {
     }
 
     const { item } = await res.json();
-    const newCart = [...cart, { ...item, cartId: item.id }];
-    setCart(newCart);
-    if (user?.id) {
-      try { localStorage.setItem(`dd_cart_${user.id}`, JSON.stringify(newCart)); } catch {}
-    }
+    setCart(prev => {
+      const newCart = [...prev, { ...item, cartId: item.id }];
+      if (user?.id) {
+        try { localStorage.setItem(`dd_cart_${user.id}`, JSON.stringify(newCart)); } catch {}
+      }
+      return newCart;
+    });
     setShowCartPopup(true);
     setTimeout(() => setShowCartPopup(false), 2000);
     return true;
@@ -110,11 +112,13 @@ export function CartProvider({ children }) {
     });
 
     if (!res.ok) { console.error('Error al eliminar del carrito'); return false; }
-    const newCart = cart.filter(item => item.cartId !== cartId);
-    setCart(newCart);
-    if (user?.id) {
-      try { localStorage.setItem(`dd_cart_${user.id}`, JSON.stringify(newCart)); } catch {}
-    }
+    setCart(prev => {
+      const newCart = prev.filter(item => item.cartId !== cartId);
+      if (user?.id) {
+        try { localStorage.setItem(`dd_cart_${user.id}`, JSON.stringify(newCart)); } catch {}
+      }
+      return newCart;
+    });
     return true;
   };
 

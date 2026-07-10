@@ -9,22 +9,43 @@ export default function Registro() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [mensaje, setMensaje] = useState('');
+  const [erroresCampo, setErroresCampo] = useState({});
   const [cargando, setCargando] = useState(false);
+
+  const err = (campo) => erroresCampo[campo];
+  const inputClass = (campo) => (err(campo) ? 'input-error' : '');
+
+  const validarCampos = () => {
+    const errs = {};
+    if (!email.trim()) {
+      errs.email = 'El email es obligatorio.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errs.email = 'Ingresá un email válido.';
+    }
+    if (!password) {
+      errs.password = 'La contraseña es obligatoria.';
+    } else if (password.length < 6) {
+      errs.password = 'La contraseña debe tener al menos 6 caracteres.';
+    }
+    if (!confirmPassword) {
+      errs.confirmPassword = 'Confirmá tu contraseña.';
+    } else if (password && confirmPassword !== password) {
+      errs.confirmPassword = 'Las contraseñas no coinciden.';
+    }
+    return errs;
+  };
 
   const handleRegistro = async (e) => {
     e.preventDefault();
     setError('');
     setMensaje('');
 
-    if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden.');
+    const errs = validarCampos();
+    if (Object.keys(errs).length > 0) {
+      setErroresCampo(errs);
       return;
     }
-
-    if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.');
-      return;
-    }
+    setErroresCampo({});
 
     setCargando(true);
 
@@ -57,7 +78,7 @@ export default function Registro() {
           Creá tu cuenta para guardar tus pedidos y agilizar el checkout.
         </p>
 
-        <form className="checkout-form" onSubmit={handleRegistro}>
+        <form className="checkout-form" onSubmit={handleRegistro} noValidate>
           <div className="checkout-section">
             <div className="checkout-field">
               <label>Email</label>
@@ -65,9 +86,13 @@ export default function Registro() {
                 type="email"
                 placeholder="tu@email.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                className={inputClass('email')}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (erroresCampo.email) setErroresCampo((prev) => ({ ...prev, email: '' }));
+                }}
               />
+              {err('email') && <span className="campo-error-msg">{err('email')}</span>}
             </div>
 
             <div className="checkout-field" style={{ marginTop: '14px' }}>
@@ -76,9 +101,13 @@ export default function Registro() {
                 type="password"
                 placeholder="Mínimo 6 caracteres"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                className={inputClass('password')}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (erroresCampo.password) setErroresCampo((prev) => ({ ...prev, password: '' }));
+                }}
               />
+              {err('password') && <span className="campo-error-msg">{err('password')}</span>}
             </div>
 
             <div className="checkout-field" style={{ marginTop: '14px' }}>
@@ -87,9 +116,13 @@ export default function Registro() {
                 type="password"
                 placeholder="Repetí tu contraseña"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
+                className={inputClass('confirmPassword')}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  if (erroresCampo.confirmPassword) setErroresCampo((prev) => ({ ...prev, confirmPassword: '' }));
+                }}
               />
+              {err('confirmPassword') && <span className="campo-error-msg">{err('confirmPassword')}</span>}
             </div>
           </div>
 
